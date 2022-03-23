@@ -57,7 +57,10 @@ contract Campaign {
         address _recipient
     ) public payable restricted {
         // add check to make sure caller has contributed
-        //require(approvers[msg.sender]);
+        require(approvers[msg.sender]);
+
+        // make sure requested value is less than campaign balance
+        require(_value <= this.balance);
 
         // key/value way to define a struct
         // best one to use *

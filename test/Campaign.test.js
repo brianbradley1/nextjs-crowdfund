@@ -66,9 +66,18 @@ describe("Campaigns", () => {
     }
   });
 
-  it("allows a manager to make a payment request", async () => {
+  it("allows a manager to create a request", async () => {
+    await campaign.methods.contribute().send({
+      from: accounts[0],
+      value: web3.utils.toWei("1", "ether"),
+    });
+
     await campaign.methods
-      .createRequest("Buy batteries", "100", accounts[1])
+      .createRequest(
+        "Buy batteries",
+        web3.utils.toWei("0.5", "ether"),
+        accounts[1]
+      )
       .send({
         from: accounts[0],
         gas: "1000000",
@@ -107,10 +116,8 @@ describe("Campaigns", () => {
     assert(balance > 104);
   });
 
-  // test cant create request with amount greater than what was contributed
-  it("can't request amount greater than campaign balance", async () => {
-
-    // first need to contribute to campaign so it has a balance > 0
+  it("can't create a request with amount greater than campaign balance", async () => {
+    // first need to contribute to campaign so it has a balance of 1 ether
     await campaign.methods.contribute().send({
       value: web3.utils.toWei("1", "ether"),
       from: accounts[1],
@@ -121,20 +128,82 @@ describe("Campaigns", () => {
     const campaignBalance = web3.utils.fromWei(summary[1], "ether");
 
     // create request with amount greater than balance
-    const amountInRequest = 0.9; // assuming value in request was 0/9 ether
-    // await campaign.methods
-    //   .createRequest("Buy carpets", web3.utils.toWei("0.0", "ether"), accounts[1])
-    //   .send({ from: accounts[0], gas: "1000000" });
+    const amountInRequest = 0.9; // assuming value in request was 0.9 ether
 
-    assert(amountInRequest <=  campaignBalance);
+    assert(amountInRequest <= campaignBalance);
+  });
+
+  it("can't create a request, approve or finalise if havent contributed", async () => {
+    const contributor = accounts[0];
+
+    await campaign.methods.contribute().send({
+      from: contributor,
+      value: web3.utils.toWei("10", "ether"),
+    });
+
+    const isContributor = await campaign.methods.approvers(contributor).call();
+
+    assert(isContributor);
+    assert.notEqual(contributor, accounts[1]);
+    assert.notEqual(contributor, accounts[2]);
+    assert.notEqual(contributor, accounts[3]);
+  });
+
+  it("can't approve request if already approved or finalise if not approved", async () => {
+    const approver = accounts[0];
+
+    await campaign.methods.contribute().send({
+      from: approver,
+      value: web3.utils.toWei("10", "ether"),
+    });
+
+    await campaign.methods
+      .createRequest("Buy tools", web3.utils.toWei("5", "ether"), accounts[1])
+      .send({ from: approver, gas: "1000000" });
+
+    await campaign.methods.approveRequest(0).send({
+      from: approver,
+      gas: "1000000",
+    });
+
+    const isApprover = await campaign.methods.approvers(approver).call();
+    assert.equal(isApprover, true);
+  });
+
+  it("can't finalise request if already finalised", async () => {
+    await campaign.methods.contribute().send({
+      from: accounts[0],
+      value: web3.utils.toWei("10", "ether"),
+    });
+
+    await campaign.methods
+      .createRequest("Buy tools", web3.utils.toWei("5", "ether"), accounts[1])
+      .send({ from: accounts[0], gas: "1000000" });
+
+    await campaign.methods.approveRequest(0).send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    await campaign.methods.finalizeRequest(0).send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    const requestCount = await campaign.methods.getRequestCount().call();
+
+    const requests = await Promise.all(
+      Array(parseInt(requestCount))
+        .fill()
+        .map((element, index) => {
+          return campaign.methods.requests(index).call();
+        })
+    );
+
+    assert.equal(requests[0].complete, true);
   });
 });
 
 // additional tests
-  // test someone not manager can approve or finalise a request
-  // test finalizing request without approving it
-  // test flow of process with more that one request - create, approve, finalise
-  // reset balances between each test? 
-
-// * Remember not doing full balance reset between tests to amounts could technically be diff
-  // look into seeing how full reset could be done
+// Can you approve or finalise if contributor or need to be manager? Need to check this
+// reset balances between each test?
