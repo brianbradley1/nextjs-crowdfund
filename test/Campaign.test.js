@@ -67,25 +67,36 @@ describe("Campaigns", () => {
   });
 
   it("allows a manager to create a request", async () => {
+    const manager = await campaign.methods.manager().call();
+
     await campaign.methods.contribute().send({
-      from: accounts[0],
+      from: manager,
       value: web3.utils.toWei("1", "ether"),
     });
 
     await campaign.methods
-      .createRequest(
-        "Buy batteries",
-        web3.utils.toWei("0.5", "ether"),
-        accounts[1]
-      )
+      .createRequest("Buy batteries", web3.utils.toWei("0.5", "ether"), manager)
       .send({
-        from: accounts[0],
+        from: manager,
         gas: "1000000",
       });
     const request = await campaign.methods.requests(0).call();
 
     // add additional test to check other properties on struck
     assert.equal("Buy batteries", request.description);
+  });
+
+  it("doesnt allow a non-manager to create a request", async () => {
+    const manager = await campaign.methods.manager().call();
+
+    await campaign.methods.contribute().send({
+      from: accounts[1],
+      value: web3.utils.toWei("0.1", "ether"),
+    });
+
+    assert.notEqual(manager, accounts[1]);
+    assert.notEqual(manager, accounts[2]);
+    assert.notEqual(manager, accounts[3]);
   });
 
   it("processes requests", async () => {
@@ -112,7 +123,7 @@ describe("Campaigns", () => {
     balance = web3.utils.fromWei(balance, "ether");
     balance = parseFloat(balance);
 
-    // using 104 to factor in gas costs  - prob closer to something like 104.99
+    // using 104 to factor in gas costs 
     assert(balance > 104);
   });
 
@@ -202,8 +213,46 @@ describe("Campaigns", () => {
 
     assert.equal(requests[0].complete, true);
   });
+
+  it("allows a manager to finalise a request", async () => {
+    const manager = await campaign.methods.manager().call();
+
+    await campaign.methods.contribute().send({
+      from: accounts[1],
+      value: web3.utils.toWei("10", "ether"),
+    });
+
+    await campaign.methods.contribute().send({
+      from: accounts[2],
+      value: web3.utils.toWei("10", "ether"),
+    });
+
+    await campaign.methods
+      .createRequest("Buy tools", web3.utils.toWei("5", "ether"), manager)
+      .send({ from: manager, gas: "1000000" });
+
+    await campaign.methods.approveRequest(0).send({
+      from: accounts[1],
+      gas: "1000000",
+    });
+
+    await campaign.methods.finalizeRequest(0).send({
+      from: manager,
+      gas: "1000000",
+    });
+
+    const requestCount = await campaign.methods.getRequestCount().call();
+
+    const requests = await Promise.all(
+      Array(parseInt(requestCount))
+        .fill()
+        .map((element, index) => {
+          return campaign.methods.requests(index).call();
+        })
+    );
+
+    assert.equal(requests[0].complete, true);
+  });
 });
 
-// additional tests
-// Can you approve or finalise if contributor or need to be manager? Need to check this
-// reset balances between each test?
+// reset balances between each test? - come back to this
