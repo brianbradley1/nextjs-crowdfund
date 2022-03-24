@@ -8,24 +8,45 @@ const fs = require("fs-extra");
 const buildPath = path.resolve(__dirname, "build");
 fs.removeSync(buildPath);
 
-// 2. - Read campaign.sol from contracts folder
-const campaignPath = path.resolve(__dirname, "contracts", "Campaign.sol");
-const source = fs.readFileSync(campaignPath, "utf8");
+// 2. - Read contracts from folder
+const contractPath = path.resolve(__dirname, "contracts");
+// 3. - Read contents from directory
+const fileNames = fs.readdirSync(contractPath);
 
-// 3. - Compile both contracts
-const output = solc.compile(source, 1).contracts;
+const compilerInput = {
+  language: "Solidity",
+  sources: fileNames.reduce((input, fileName) => {
 
-// 4. - Write output to build dir
+    const filePath = path.resolve(contractPath, fileName);
+    const source = fs.readFileSync(filePath, "utf8");
+
+    return { ...input, [fileName]: { content: source } };
+  }, {}),
+  settings: {
+    outputSelection: {
+      "*": {
+        "*": ["abi", "evm.bytecode.object"],
+      },
+    },
+  },
+};
+
+// 4. Compile All contracts
+const compiled = JSON.parse(solc.compile(JSON.stringify(compilerInput)));
+
+// 5. - Write output to build dir
 fs.ensureDirSync(buildPath); // make sure build path is created
 
-// 5. - loop through compiled out to get individual contracts
-  // should have 2 seperate properties - Campaign and CampaignFactory
-for (let contract in output) {
-  fs.outputJsonSync(
-    // append output to build path
-    // need to replace : as its added at end of compiled property
-    path.resolve(buildPath, contract.replace(':', '') + ".json"),
-    // pull off contract from output
-    output[contract]
-  );
-}
+// 6. - loop through compiled out to get individual contracts
+fileNames.map((fileName) => {
+  const contracts = Object.keys(compiled.contracts[fileName]);
+  contracts.map((contract) => {
+    fs.outputJsonSync(
+      path.resolve(buildPath, contract + ".json"),
+      compiled.contracts[fileName][contract]
+    );
+  });
+});
+
+
+

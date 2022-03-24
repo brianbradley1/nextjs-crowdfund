@@ -1,16 +1,17 @@
-pragma solidity ^0.4.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.12; // Released on 22/07/2020
 
 // used to deploy instances of the 'Campaign' contract
 contract CampaignFactory {
-    address[] public deployedCampaigns;
+    address payable[] public deployedCampaigns;
 
     function createCampaign(uint256 minimum) public {
         // need to pass in msg.sender to make sure manager set to correct address
-        address newCampaign = new Campaign(minimum, msg.sender);
-        deployedCampaigns.push(newCampaign);
+        address newCampaign = address(new Campaign(minimum, msg.sender));
+        deployedCampaigns.push(payable(newCampaign));
     }
 
-    function getDeployedCampaigns() public view returns (address[]) {
+    function getDeployedCampaigns() public view returns (address payable[] memory) {
         return deployedCampaigns;
     }
 }
@@ -38,7 +39,7 @@ contract Campaign {
         _;
     }
 
-    function Campaign(uint256 minimum, address creator) public {
+    constructor(uint256 minimum, address creator) public {
         manager = creator;
         minimumContribution = minimum;
     }
@@ -52,19 +53,14 @@ contract Campaign {
     }
 
     function createRequest(
-        string _description,
+        string memory _description,
         uint256 _value,
         address _recipient
     ) public payable restricted {
-        // add check to make sure caller has contributed
-        require(approvers[msg.sender]);
-
         // make sure requested value is less than campaign balance
-        require(_value <= this.balance);
+        require(_value <= (address(this).balance));
 
         // key/value way to define a struct
-        // best one to use *
-        // others would be easy to catch if code changed
         Request memory newRequest = Request({
             description: _description,
             value: _value,
@@ -82,6 +78,7 @@ contract Campaign {
 
         // make sure caller has contributed
         require(approvers[msg.sender]);
+
         // make sure contributor has not already approved this request - if so kick out
         require(!request.approvals[msg.sender]);
 
@@ -100,7 +97,7 @@ contract Campaign {
         require(!request.complete);
 
         // send me to requestor who will be the manager
-        request.recipient.transfer(request.value);
+        payable(request.recipient).transfer(request.value);
         request.complete = true;
     }
 
@@ -117,7 +114,7 @@ contract Campaign {
     {
         return (
             minimumContribution,
-            this.balance,
+            (address(this).balance),
             requests.length,
             approversCount,
             manager
