@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.12; // Released on 22/07/2020
+pragma solidity ^0.8.9; // Released on 29/09/2021
 
 // used to deploy instances of the 'Campaign' contract
 contract CampaignFactory {
@@ -28,7 +28,9 @@ contract Campaign {
         mapping(address => bool) approvals;
     }
 
-    Request[] public requests;
+    uint numRequests;
+    mapping (uint => Request) public requests;
+
     address public manager;
     uint256 public minimumContribution;
     mapping(address => bool) public approvers;
@@ -39,7 +41,7 @@ contract Campaign {
         _;
     }
 
-    constructor(uint256 minimum, address creator) public {
+    constructor(uint256 minimum, address creator) {
         manager = creator;
         minimumContribution = minimum;
     }
@@ -60,16 +62,14 @@ contract Campaign {
         // make sure requested value is less than campaign balance
         require(_value <= (address(this).balance));
 
-        // key/value way to define a struct
-        Request memory newRequest = Request({
-            description: _description,
-            value: _value,
-            recipient: _recipient,
-            complete: false,
-            approvalCount: 0
-        });
-
-        requests.push(newRequest);
+        // Since v0.7.1 - if struct contains a mapping, it can be only used in storage
+        // Previously mappings were silently skipped in memory - confusing and error prone
+        Request storage r = requests[numRequests++];
+        r.description = _description;
+        r.value = _value;
+        r.recipient = _recipient;
+        r.complete = false;
+        r.approvalCount = 0;
     }
 
     // each contributor should be able to call this request
@@ -115,13 +115,13 @@ contract Campaign {
         return (
             minimumContribution,
             (address(this).balance),
-            requests.length,
+            numRequests,
             approversCount,
             manager
         );
     }
 
     function getRequestCount() public view returns (uint256) {
-        return requests.length;
+        return numRequests;
     }
 }
