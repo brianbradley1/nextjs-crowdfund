@@ -6,3 +6,4 @@ ethereum/build
 ethereum/build/Campaign.json
 ethereum/build/CampaignFactory.json
 DeployedContractAddress
+.vscode
