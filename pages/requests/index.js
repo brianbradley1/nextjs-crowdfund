@@ -1,11 +1,24 @@
 import React, { Component } from "react";
-import { Button, Table } from "semantic-ui-react";
+import { Button, Table, Message } from "semantic-ui-react";
 import Layout from "../../components/Layout";
 import { Link } from "../../routes";
 import Campaign from "../../ethereum/campaign";
 import RequestRow from "../../components/RequestRow";
 
 class RequestIndex extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      errorMessage: "",
+    }
+  }
+
+  // Create callback function and pass to RequestRow (child) as props
+  // Child component will call this and pass data back to parent
+  updateErrorMessage = (childData) => {
+    this.setState({ errorMessage: childData });
+  };
+
   static async getInitialProps(props) {
     const { address } = props.query;
     const campaign = Campaign(address);
@@ -38,6 +51,7 @@ class RequestIndex extends Component {
           request={request}
           address={this.props.address}
           approversCount={this.props.approversCount}
+          updateErrorMessage={this.updateErrorMessage}
         />
       );
     });
@@ -51,7 +65,7 @@ class RequestIndex extends Component {
         <h3>Requests</h3>
         <Link route={`/campaigns/${this.props.address}/requests/new`}>
           <a>
-          <Button primary floated="right" style={{ marginBottom: 10 }}>
+            <Button primary floated="right" style={{ marginBottom: 10 }}>
               Add Request
             </Button>
           </a>
@@ -71,6 +85,7 @@ class RequestIndex extends Component {
           <Body>{this.renderRows()}</Body>
         </Table>
         <div>Found {this.props.requestCount} requests.</div>
+        <Message hidden={!this.state.errorMessage} error header="Error" content={this.state.errorMessage} style={{ overflowWrap: "break-word" }} />
       </Layout>
     );
   }
