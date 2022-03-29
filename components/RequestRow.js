@@ -8,7 +8,7 @@ class RequestRow extends Component {
   constructor(props) {
     super(props);
   }
-
+  
   state = {
     loadingApproval: false,
     loadingFinalize: false,
@@ -31,16 +31,53 @@ class RequestRow extends Component {
     Router.replaceRoute(`/campaigns/${this.props.address}/requests`);
   };
 
+  // checkCampaignBalance = async () => {
+  //   // get campaign balance
+  //   const campaign = Campaign(this.props.address);
+  //   const summary = await campaign.methods.getSummary().call();
+  //   const balance = summary[1];
+  //   console.log("Balance = " + balance);
+
+  //   // get sender amount
+  //   //const campaign = Campaign(this.props.address);
+  //   const { value } = campaign;
+  //   console.log("Request value = " + value);
+
+  //   // check if sending amount greater than remaining campaign balance
+  //   return value > balance;
+  // }
+
   onFinalize = async () => {
     this.setState({ loadingFinalize: true });
-    this.props.updateErrorMessage(""); 
+    this.props.updateErrorMessage("");
 
     try {
+      // // add check to make sure request amount not > than campaign balance
+      // if (this.checkCampaignBalance() === true)
+      // {
+      //   this.props.updateErrorMessage("Request amount greater than remaining campaign balance");
+      // }
+      // else
+      // {
       const campaign = Campaign(this.props.address);
-      const accounts = await web3.eth.getAccounts();
-      await campaign.methods.finalizeRequest(this.props.id).send({
-        from: accounts[0],
-      });
+
+      // get campaign balance
+      const summary = await campaign.methods.getSummary().call();
+      const campaignBalance = summary[1];
+
+      // get sender amount
+      const requestValue  = web3.utils.fromWei(this.props.request.value, "ether")
+
+      // check if sending amount greater than remaining campaign balance
+      if (requestValue <= campaignBalance) {
+        const accounts = await web3.eth.getAccounts();
+        await campaign.methods.finalizeRequest(this.props.id).send({
+          from: accounts[0],
+        });
+      } else {
+        this.props.updateErrorMessage(`Request amount ${requestValue} greater than remaining campaign balance of ${campaignBalance}`);
+      }
+      //}
     } catch (err) {
       this.props.updateErrorMessage(err.message);
     }
