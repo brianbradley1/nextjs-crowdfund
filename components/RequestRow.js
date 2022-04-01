@@ -14,23 +14,6 @@ class RequestRow extends Component {
     loadingFinalize: false,
   };
 
-  onApprove = async () => {
-    this.setState({ loadingApproval: true });
-    this.props.updateErrorMessage("");
-
-    try {
-      const campaign = Campaign(this.props.address);
-      const accounts = await web3.eth.getAccounts();
-      await campaign.methods.approveRequest(this.props.id).send({
-        from: accounts[0],
-      });
-    } catch (err) {
-      this.props.updateErrorMessage(err.message);
-    }
-    this.setState({ loadingApproval: false });
-    Router.replaceRoute(`/campaigns/${this.props.address}/requests`);
-  };
-
   isReqValueGreaterThanCampaignBalance = async () => {
     const campaign = Campaign(this.props.address);
 
@@ -42,8 +25,8 @@ class RequestRow extends Component {
     const requestValue = web3.utils.fromWei(this.props.request.value, "ether");
 
     // check if sending amount greater than remaining campaign balance
-    const result = requestValue <= campaignBalance;
-    return [result, requestValue, campaignBalance];
+    const isGreaterThanCampaignBalance = requestValue <= campaignBalance;
+    return [isGreaterThanCampaignBalance, requestValue, campaignBalance];
   };
 
   checkNoOfApprovers = async () => {
@@ -51,26 +34,73 @@ class RequestRow extends Component {
     return request.approvalCount > approversCount / 2;
   };
 
+  checkIfManager = async () => {
+    // get manager of contract
+    const campaign = Campaign(this.props.address);
+    const summary = await campaign.methods.getSummary().call();
+    const manager = summary[4];
+
+    // get requestor
+    const accounts = await web3.eth.getAccounts();
+    const requestor = accounts[0];
+
+    return manager === requestor;
+  };
+
+  //isAlreadyApproved = async () => request.approvalCount > approversCount / 2;
+
+  onApprove = async () => {
+    this.setState({ loadingApproval: true });
+    this.props.updateErrorMessage("");
+
+    const isManager = await this.checkIfManager();
+    //const isAlreadyApproved = this.isAlreadyApproved();
+
+    try {
+      if (isManager === true) {
+        this.props.updateErrorMessage(
+          `Manager of campaign can't be an approver`
+        );
+      }
+      else {
+        const campaign = Campaign(this.props.address);
+        const accounts = await web3.eth.getAccounts();
+        await campaign.methods.approveRequest(this.props.id).send({
+          from: accounts[0],
+        });
+      }
+    } catch (err) {
+      this.props.updateErrorMessage(err.message);
+    }
+    this.setState({ loadingApproval: false });
+    Router.replaceRoute(`/campaigns/${this.props.address}/requests`);
+  };
+
   onFinalize = async () => {
     this.setState({ loadingFinalize: true });
     this.props.updateErrorMessage("");
 
     try {
-      const [result, requestValue, campaignBalance] =
+      const [isGreaterThanCampaignBalance, requestValue, campaignBalance] =
         await this.isReqValueGreaterThanCampaignBalance();
 
       // check to make sure min number of approvers have approved before finalizing request
       const isCorrectNoOfApprovers = await this.checkNoOfApprovers();
 
+      const isManager = await this.checkIfManager();
+
       // add check to make sure request amount not > than campaign balance
-      if (result === false) {
+      if (isGreaterThanCampaignBalance === false) {
         this.props.updateErrorMessage(
           `Request amount ${requestValue} greater than remaining campaign balance of ${campaignBalance}`
         );
-      } 
-      else if (isCorrectNoOfApprovers === false) {
+      } else if (isCorrectNoOfApprovers === false) {
         this.props.updateErrorMessage(
           `Not enough approvers to finalize request. Must be greater than 50%`
+        );
+      } else if (isManager === false) {
+        this.props.updateErrorMessage(
+          `Only the manager of the campaign can finalize a request`
         );
       } else {
         const campaign = Campaign(this.props.address);
@@ -120,6 +150,7 @@ class RequestRow extends Component {
               loading={this.state.loadingApproval}
               color="green"
               basic
+              disabled={readyToFinalize && !request.complete}
               onClick={this.onApprove}
             >
               Approve
