@@ -46,6 +46,11 @@ class RequestRow extends Component {
     return [result, requestValue, campaignBalance];
   };
 
+  checkNoOfApprovers = async () => {
+    const { request, approversCount } = this.props;
+    return request.approvalCount > approversCount / 2;
+  };
+
   onFinalize = async () => {
     this.setState({ loadingFinalize: true });
     this.props.updateErrorMessage("");
@@ -54,10 +59,18 @@ class RequestRow extends Component {
       const [result, requestValue, campaignBalance] =
         await this.isReqValueGreaterThanCampaignBalance();
 
-      // // add check to make sure request amount not > than campaign balance
+      // check to make sure min number of approvers have approved before finalizing request
+      const isCorrectNoOfApprovers = await this.checkNoOfApprovers();
+
+      // add check to make sure request amount not > than campaign balance
       if (result === false) {
         this.props.updateErrorMessage(
           `Request amount ${requestValue} greater than remaining campaign balance of ${campaignBalance}`
+        );
+      } 
+      else if (isCorrectNoOfApprovers === false) {
+        this.props.updateErrorMessage(
+          `Not enough approvers to finalize request. Must be greater than 50%`
         );
       } else {
         const campaign = Campaign(this.props.address);
