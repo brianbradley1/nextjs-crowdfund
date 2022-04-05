@@ -3,6 +3,7 @@ import Header from "./Header";
 import { Container } from "semantic-ui-react";
 // next js helper function used to add files to head tag of html doc
 import Head from "next/head";
+import WalletConnection from "../ethereum/WalletConnection";
 
 const Layout = (props) => {
   return (
@@ -15,6 +16,7 @@ const Layout = (props) => {
         />
       </Head>
 
+      <WalletConnection />
       <Header />
       {props.children}
     </Container>

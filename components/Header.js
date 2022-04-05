@@ -12,7 +12,7 @@ const Header = (props) => {
       </Link>
 
       <Menu.Menu position="right">
-      <Link route="/">
+      {/* <Link route="/">
         <a className="item">
           Campaigns
         </a>
@@ -22,7 +22,19 @@ const Header = (props) => {
         <a className="item">
           +
         </a>
+      </Link> */}
+
+      {/* <Link route="/campaigns/new">
+        <a className="item">
+          Connect Wallet
+        </a>
       </Link>
+
+      <Link route="/campaigns/new">
+        <a className="item">
+          Current Network
+        </a>
+      </Link> */}
       </Menu.Menu>
     </Menu>
   );
