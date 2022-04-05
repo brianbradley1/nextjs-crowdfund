@@ -47,14 +47,11 @@ class RequestRow extends Component {
     return manager === requestor;
   };
 
-  //isAlreadyApproved = async () => request.approvalCount > approversCount / 2;
-
   onApprove = async () => {
     this.setState({ loadingApproval: true });
     this.props.updateErrorMessage("");
 
     const isManager = await this.checkIfManager();
-    //const isAlreadyApproved = this.isAlreadyApproved();
 
     try {
       if (isManager === true) {
