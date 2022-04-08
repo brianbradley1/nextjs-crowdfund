@@ -7,7 +7,7 @@ const { abi } = require('./build/CampaignFactory.json');
 // web3 provider config
 const instance = new web3.eth.Contract(
   abi,
-  '0x14aaB8E555f9D049A315bA4b8F3392ba4B64e6C6'
+  '0x2b2B2e28BcFFf2F772393DF8da46919eB1AC039C'
 );
 
 export default instance;

@@ -49,9 +49,12 @@ contract Campaign {
     function contribute() public payable {
         require(msg.value > minimumContribution);
 
-        // add value to mapping
-        approvers[msg.sender] = true;
-        approversCount++;
+        // add check to make sure doesn't increment approver twice for same address
+        if(approvers[msg.sender] == false)
+        {
+            approversCount++;
+            approvers[msg.sender] = true;
+        }   
     }
 
     function createRequest(
