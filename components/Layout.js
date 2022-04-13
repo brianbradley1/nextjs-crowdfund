@@ -16,7 +16,7 @@ const Layout = (props) => {
         />
       </Head>
 
-      <WalletConnection />
+      
       <Header />
       {props.children}
     </Container>

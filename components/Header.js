@@ -1,42 +1,26 @@
 import React from "react";
-import { Menu } from "semantic-ui-react";
+import { AppBar, Toolbar, IconButton, Button } from "@material-ui/core";
+import MenuIcon from "@material-ui/icons/Menu";
 import { Link } from "../routes";
+import WalletConnection from "../ethereum/WalletConnection";
 
 const Header = (props) => {
   return (
-    <Menu style={{ marginTop: '10px' }}>
-      <Link route="/">
-        <a className="item">
-          Crowdfund
-        </a>
-      </Link>
-
-      <Menu.Menu position="right">
-      {/* <Link route="/">
-        <a className="item">
-          Campaigns
-        </a>
-      </Link>
-
-      <Link route="/campaigns/new">
-        <a className="item">
-          +
-        </a>
-      </Link> */}
-
-      {/* <Link route="/campaigns/new">
-        <a className="item">
-          Connect Wallet
-        </a>
-      </Link>
-
-      <Link route="/campaigns/new">
-        <a className="item">
-          Current Network
-        </a>
-      </Link> */}
-      </Menu.Menu>
-    </Menu>
+    <AppBar color="primary">
+      <Toolbar sx={{ justifyContent: "space-between" }}>
+        <Link route="/">
+          <a className="item" style={{ color: "white" }}>
+            Crowdfund
+          </a>
+        </Link>
+        {/* <IconButton>
+          <MenuIcon />
+        </IconButton> */}
+        <div style={{ marginLeft: "auto" }}>
+          <WalletConnection />
+        </div>
+      </Toolbar>
+    </AppBar>
   );
 };
 export default Header;

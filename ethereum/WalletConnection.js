@@ -43,7 +43,7 @@ function WalletConnection() {
       ) : (
         <div style={{ float: "right", marginLeft: "10px" }}>
           <Button style={{ backgroundColor: "orange", color: "black" }} onClick={() => wallet.connect()}>
-            MetaMask
+            Connect Wallet
           </Button>
         </div>
       )}
