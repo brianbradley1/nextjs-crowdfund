@@ -1,9 +1,8 @@
 import React from "react";
 import Header from "./Header";
-import { Container } from "semantic-ui-react";
+import { Container } from "@material-ui/core";
 // next js helper function used to add files to head tag of html doc
 import Head from "next/head";
-import WalletConnection from "../ethereum/WalletConnection";
 
 const Layout = (props) => {
   return (

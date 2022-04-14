@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useWallet, UseWalletProvider } from "use-wallet";
 import web3 from "../ethereum/web3";
-import { Button } from "semantic-ui-react";
+import { Button } from "@material-ui/core";
+
 
 function WalletConnection() {
   const [network, setNetwork] = useState(null);
