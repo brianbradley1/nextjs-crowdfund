@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useWallet, UseWalletProvider } from "use-wallet";
 import web3 from "../ethereum/web3";
-import { Button } from "@material-ui/core";
-
+import { Button, ButtonGroup } from "@material-ui/core";
 
 function WalletConnection() {
   const [network, setNetwork] = useState(null);
@@ -34,16 +33,27 @@ function WalletConnection() {
     <>
       {wallet.status === "connected" ? (
         <div style={{ float: "right", marginLeft: "10px" }}>
-          <div className="item">Account: {wallet.account}</div>
-          <div className="item">Balance: {balance}</div>
-          <div className="item">Network: {network} on ethereum</div>
-          <Button style={{ backgroundColor: "orange", color: "black" }} onClick={() => wallet.reset()}>
+          <ButtonGroup
+            variant="contained"
+            aria-label="outlined primary button group"
+          >
+            <Button>Account: {wallet.account}</Button>
+            <Button>Balance: {balance}</Button>
+            <Button>Network: {network}</Button>
+          </ButtonGroup>
+          <Button
+            style={{ backgroundColor: "orange", color: "black" }}
+            onClick={() => wallet.reset()}
+          >
             Disconnect
           </Button>
         </div>
       ) : (
         <div style={{ float: "right", marginLeft: "10px" }}>
-          <Button style={{ backgroundColor: "orange", color: "black" }} onClick={() => wallet.connect()}>
+          <Button
+            style={{ backgroundColor: "orange", color: "black" }}
+            onClick={() => wallet.connect()}
+          >
             Connect Wallet
           </Button>
         </div>
