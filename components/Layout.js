@@ -17,6 +17,7 @@ const Layout = (props) => {
 
       
       <Header />
+      <div style={{ marginTop: "120px" }}></div>
       {props.children}
     </Container>
   );
