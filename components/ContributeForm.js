@@ -1,57 +1,74 @@
 import { Router } from "../routes";
-import React, { Component } from "react";
-import { Button, Form, FormField, Input, Message } from "semantic-ui-react";
+import React, { useState } from "react";
 import Campaign from "../ethereum/campaign";
 import web3 from "../ethereum/web3";
+import Grid from "@material-ui/core/Grid";
+import Alert from "@material-ui/lab/Alert";
+import TextField from "@material-ui/core/TextField";
+import { LoadingButton } from "@mui/lab";
 
-class ContrubiteForm extends Component {
-  state = {
-    value: "",
-    errorMessage: "",
-    loading: false,
-  };
+function ContributeForm({ address }) {
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [contribution, setContributionValue] = useState("");
 
-  onSubmit = async (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
 
-    const campaign = Campaign(this.props.address);
+    const campaign = Campaign(address);
 
-    // * curly braces inside means returning object without writing return statement
-    this.setState({ loading: true, errorMessage: "" });
+    setErrorMessage("");
+    setLoading(true);
 
     try {
       const accounts = await web3.eth.getAccounts();
+      console.log("Submitting form")
       await campaign.methods.contribute().send({
         from: accounts[0],
-        value: web3.utils.toWei(this.state.value, "ether"),
+        value: web3.utils.toWei(contribution, "ether"),
       });
 
-      Router.replaceRoute(`/campaigns/${this.props.address}`);
+      Router.replaceRoute(`/campaigns/${address}`);
     } catch (err) {
-      this.setState({ errorMessage: err.message });
+      console.log(err.message)
+      setLoading(false);
+      setErrorMessage(err.message);
     }
 
-    this.setState({ loading: false, value: '' });
+    setLoading(false);
   };
 
-  render() {
-    return (
-      <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
-        <FormField>
-          <label>Amount to contribute</label>
-          <Input
-            value={this.state.value}
-            onChange={(event) => this.setState({ value: event.target.value })}
-            label="ether"
-            labelPosition="right"
-          />
-        </FormField>
+  const handleInputChange = (e) => {
+    const eventVal = e.target.value;
+    setContributionValue(eventVal);
+  };
 
-        <Message error header="Oops" content={this.state.errorMessage} />
-        <Button primary loading={this.state.loading}>Contribute!</Button>
-      </Form>
-    );
-  }
+  return (
+    <form onSubmit={onSubmit}>
+      <Grid container spacing={2} direction="column">
+        <Grid item>
+          <h3>Amount to contribute</h3>
+
+          <TextField
+            id="contributionValue-input"
+            name="contributionValue"
+            label="ether"
+            type="text"
+            value={contribution}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid item>
+          <LoadingButton loading={loading} variant="contained" type="submit">
+            Contribute
+          </LoadingButton>
+        </Grid>
+      </Grid>
+      <br />
+      {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
+    </form>
+  );
 }
 
-export default ContrubiteForm;
+export default ContributeForm;
