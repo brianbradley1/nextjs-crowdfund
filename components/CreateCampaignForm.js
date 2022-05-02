@@ -11,7 +11,7 @@ const defaultValues = {
   minimumContribution: "",
 };
 
-function CreateCamaignForm() {
+function CreateCampaignForm() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [formValues, setFormValues] = useState(defaultValues);
@@ -80,4 +80,4 @@ function CreateCamaignForm() {
     </form>
   );
 }
-export default CreateCamaignForm;
+export default CreateCampaignForm;
