@@ -43,7 +43,7 @@ class CampaignIndex extends Component {
               Open Campaigns
             </Typography>
             <div style={{ marginTop: "40px" }}>
-              <Grid container spacing={2} justify="center">
+              <Grid container spacing={2} justifyContent="center">
                 <Grid item>
                   <Link route="/campaigns/new">
                     <a>

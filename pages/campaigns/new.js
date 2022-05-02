@@ -4,58 +4,15 @@ import { Form, Button, Input, Message } from "semantic-ui-react";
 import factory from "../../ethereum/factory";
 import web3 from "../../ethereum/web3";
 import { Link, Router } from "../../routes";
+import LoadingButton from "../../components/LoadingButton";
+import CreateCamaignForm from "../../components/CreateCamaignForm";
+
 
 class CampaignNew extends Component {
-  state = {
-    minimumContribution: "",
-    errorMessage: "",
-    loading: false,
-  };
-
-  onSubmit = async (event) => {
-    event.preventDefault();
-
-    this.setState({ loading: true, errorMessage: ""  });
-
-    try {
-      const accounts = await web3.eth.getAccounts();
-      await factory.methods
-        .createCampaign(web3.utils.toWei(this.state.minimumContribution, "ether"))
-        .send({
-          from: accounts[0],
-        });
-
-        Router.pushRoute('/');
-    } catch (err) {
-      this.setState({ errorMessage: err.message });
-    }
-
-    this.setState({ loading: false });
-  };
-
   render() {
     return (
       <Layout>
-        <h3>Create a Campaign</h3>
-
-        {/* dont add () for onSubmit as dont want to call now, just a ref so can be called in future */}
-        {/* !! trick to turn errorMessage prop to false */}
-        <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
-          <Form.Field>
-            <label>Minimum Contribution</label>
-            <Input
-              label="ether"
-              labelPosition="right"
-              value={this.state.minimumContribution}
-              onChange={(event) =>
-                this.setState({ minimumContribution: event.target.value })
-              }
-            />
-          </Form.Field>
-
-          <Message error header="Error" content={this.state.errorMessage} />
-          <Button loading={this.state.loading} primary>Create</Button>
-        </Form>
+        <CreateCamaignForm />
       </Layout>
     );
   }
