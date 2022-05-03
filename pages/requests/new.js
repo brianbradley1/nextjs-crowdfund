@@ -1,99 +1,124 @@
-import React, { Component } from "react";
-import { Form, Button, Message, Input } from "semantic-ui-react";
+import React, { useState } from "react";
+import Grid from "@material-ui/core/Grid";
+import Alert from "@material-ui/lab/Alert";
+import TextField from "@material-ui/core/TextField";
 import Campaign from "../../ethereum/campaign";
 import web3 from "../../ethereum/web3";
 import { Link, Router } from "../../routes";
 import Layout from "../../components/Layout";
+import { LoadingButton } from "@mui/lab";
 
-class RequestNew extends Component {
-  state = {
-    value: "",
+RequestNew.getInitialProps = async ({ query }) => {
+  const { address } = query;
+  return { address };
+};
+
+function RequestNew({ address }) {
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [formValues, setFormValues] = useState({
+    requestValue: "",
     description: "",
     receipient: "",
-    errorMessage: "",
-    loading: false,
-  };
+  });
 
-  static async getInitialProps(props) {
-    const { address } = props.query; 
-    return { address };
-  }
-
-  onSubmit = async (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
 
-    this.setState({ loading: true, errorMessage: "" });
+    setLoading(true);
+    setErrorMessage("");
 
     try {
-      const campaign = Campaign(this.props.address);
-      const { description, value, receipient } = this.state;
-
+      const campaign = Campaign(address);
       const accounts = await web3.eth.getAccounts();
       await campaign.methods
         .createRequest(
-          description,
-          web3.utils.toWei(value, "ether"),
-          receipient
+          formValues.description,
+          web3.utils.toWei(formValues.requestValue, "ether"),
+          formValues.receipient
         )
         .send({
           from: accounts[0],
         });
 
-      Router.pushRoute(`/campaigns/${this.props.address}/requests`);
+      Router.pushRoute(`/campaigns/${address}/requests`);
     } catch (err) {
-      this.setState({ errorMessage: err.message });
+      console.log(err.message);
+      setErrorMessage(err.message);
     }
 
-    this.setState({ loading: false });
+    setLoading(false);
   };
 
-  render() {
-    return (
-      <Layout>
-        <Link route={`/campaigns/${this.props.address}/requests`}>
-          <a>
-            Back
-          </a>
-        </Link>
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues({
+      ...formValues,
+      [name]: value,
+    });
+  };
 
-        <h3>Create a request</h3>
-        <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
-          <Form.Field>
-            <label>Description</label>
-            <Input
-              value={this.state.description}
-              onChange={(event) =>
-                this.setState({ description: event.target.value })
-              }
+  return (
+    <Layout>
+      <Link route={`/campaigns/${address}/requests`}>
+        <a>Back</a>
+      </Link>
+      <br />
+      <br />
+      <form onSubmit={onSubmit}>
+        <Grid
+          container
+          spacing={2}
+          direction="column"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Grid item>
+            <h3>Create a request</h3>
+
+            <Grid item>
+              <TextField
+                id="requestValue-input"
+                name="requestValue"
+                label="Request Value"
+                type="text"
+                value={formValues.requestValue}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <TextField
+              id="description-input"
+              name="description"
+              label="Description"
+              type="text"
+              value={formValues.description}
+              onChange={handleInputChange}
             />
-          </Form.Field>
+          </Grid>
 
-          <Form.Field>
-            <label>Value in ether</label>
-            <Input
-              value={this.state.value}
-              onChange={(event) => this.setState({ value: event.target.value })}
+          <Grid item>
+            <TextField
+              id="receipient-input"
+              name="receipient"
+              label="Receipient"
+              type="text"
+              value={formValues.receipient}
+              onChange={handleInputChange}
             />
-          </Form.Field>
+          </Grid>
 
-          <Form.Field>
-            <label>Receipient</label>
-            <Input
-              value={this.state.receipient}
-              onChange={(event) =>
-                this.setState({ receipient: event.target.value })
-              }
-            />
-          </Form.Field>
-
-          <Message error header="Error" content={this.state.errorMessage} />
-          <Button loading={this.state.loading} primary>
-            Create!
-          </Button>
-        </Form>
-      </Layout>
-    );
-  }
+          <Grid item>
+            <LoadingButton loading={loading} variant="contained" type="submit">
+              Create
+            </LoadingButton>
+          </Grid>
+        </Grid>
+        <br />
+        {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
+      </form>
+    </Layout>
+  );
 }
 
 export default RequestNew;
