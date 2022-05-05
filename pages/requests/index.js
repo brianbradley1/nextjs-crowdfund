@@ -1,94 +1,99 @@
-import React, { Component } from "react";
-import { Button, Table, Message } from "semantic-ui-react";
+import React, { useState } from "react";
+import { Button } from "@material-ui/core";
 import Layout from "../../components/Layout";
 import { Link } from "../../routes";
 import Campaign from "../../ethereum/campaign";
 import RequestRow from "../../components/RequestRow";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Alert from "@material-ui/lab/Alert";
 
-class RequestIndex extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      errorMessage: "",
-    }
-  }
+RequestIndex.getInitialProps = async ({ query }) => {
+  const { address } = query;
+  const campaign = Campaign(address);
+
+  const requestCount = await campaign.methods.getRequestCount().call();
+  const approversCount = await campaign.methods.approversCount().call();
+
+  // workaround as solidity doesnt have support for getting array of structs
+  const requests = await Promise.all(
+    // array.fill - returns array with 1 empty index
+    // Array constructor expects number not a string, so need to parse
+    Array(parseInt(requestCount))
+      .fill()
+      // say to count from array index up to request count
+      .map((element, index) => {
+        // returns instance of each request
+        return campaign.methods.requests(index).call();
+      })
+  );
+
+  return { address, requests, requestCount, approversCount };
+};
+
+function RequestIndex({ address, requests, requestCount, approversCount }) {
+  const { Header, Row, HeaderCell, Body } = Table;
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Create callback function and pass to RequestRow (child) as props
   // Child component will call this and pass data back to parent
-  updateErrorMessage = (childData) => {
-    this.setState({ errorMessage: childData });
+  const updateErrorMessage = (childData) => {
+    setErrorMessage(childData);
   };
 
-  static async getInitialProps(props) {
-    const { address } = props.query;
-    const campaign = Campaign(address);
-
-    const requestCount = await campaign.methods.getRequestCount().call();
-    const approversCount = await campaign.methods.approversCount().call();
-
-    // workaround as solidity doesnt have support for getting array of structs
-    const requests = await Promise.all(
-      // array.fill - returns array with 1 empty index
-      // Array constructor expects number not a string, so need to parse
-      Array(parseInt(requestCount))
-        .fill()
-        // say to count from array index up to request count
-        .map((element, index) => {
-          // returns instance of each request
-          return campaign.methods.requests(index).call();
-        })
-    );
-
-    return { address, requests, requestCount, approversCount };
-  }
-
-  renderRows() {
-    return this.props.requests.map((request, index) => {
+  const renderRows = () => {
+    return requests.map((request, index) => {
       return (
         <RequestRow
           key={index}
           id={index}
           request={request}
-          address={this.props.address}
-          approversCount={this.props.approversCount}
-          updateErrorMessage={this.updateErrorMessage}
+          address={address}
+          approversCount={approversCount}
+          updateErrorMessage={updateErrorMessage}
         />
       );
     });
-  }
+  };
 
-  render() {
-    const { Header, Row, HeaderCell, Body } = Table;
-
-    return (
-      <Layout>
-        <h3>Requests</h3>
-        <Link route={`/campaigns/${this.props.address}/requests/new`}>
-          <a>
-            <Button primary floated="right" style={{ marginBottom: 10 }}>
-              Add Request
-            </Button>
-          </a>
-        </Link>
-        <Table>
-          <Header>
-            <Row>
-              <HeaderCell>ID</HeaderCell>
-              <HeaderCell>Description</HeaderCell>
-              <HeaderCell>Amount</HeaderCell>
-              <HeaderCell>Recipient</HeaderCell>
-              <HeaderCell>Approval Count</HeaderCell>
-              <HeaderCell>Approve</HeaderCell>
-              <HeaderCell>Finalize</HeaderCell>
-            </Row>
-          </Header>
-          <Body>{this.renderRows()}</Body>
-        </Table>
-        <div>Found {this.props.requestCount} requests.</div>
-        <Message hidden={!this.state.errorMessage} error header="Error" content={this.state.errorMessage} style={{ overflowWrap: "break-word" }} />
-      </Layout>
-    );
-  }
+  return (
+    <Layout>
+      <Link route={`/campaigns/${address}`}>
+        <a>Back</a>
+      </Link>
+      
+      <Link route={`/campaigns/${address}/requests/new`}>
+        <a>
+          <Button variant="contained" color="primary" style={{ float: "right" }}>
+            Add Request
+          </Button>
+        </a>
+      </Link>
+      <h3>Requests</h3>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>ID</TableCell>
+            <TableCell>Description</TableCell>
+            <TableCell>Amount</TableCell>
+            <TableCell>Recipient</TableCell>
+            <TableCell>Approval Count</TableCell>
+            <TableCell>Approve</TableCell>
+            <TableCell>Finalize</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+        {renderRows()}
+        </TableBody>
+      </Table>
+      <div>Found {requestCount} requests.</div>
+      <br />
+      {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
+    </Layout>
+  );
 }
 
 export default RequestIndex;
