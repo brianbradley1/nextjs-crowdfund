@@ -5,7 +5,8 @@ import TextField from "@material-ui/core/TextField";
 import factory from "../ethereum/factory";
 import web3 from "../ethereum/web3";
 import { Router } from "../routes";
-import { LoadingButton } from '@mui/lab';
+import { LoadingButton } from "@mui/lab";
+import Snackbar from "@mui/material/Snackbar";
 
 const defaultValues = {
   minimumContribution: "",
@@ -15,6 +16,9 @@ function CreateCampaignForm() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [formValues, setFormValues] = useState(defaultValues);
+  const [open, setOpen] = useState(false);
+  const [vertical, setVertical] = useState('top');
+  const [horizontal, setHorizontal] = useState('center');
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -33,7 +37,10 @@ function CreateCampaignForm() {
           from: accounts[0],
         });
 
-      Router.pushRoute("/");
+      setOpen(true);
+      setTimeout(() => {
+        Router.pushRoute("/");
+      }, 3000);
     } catch (err) {
       setLoading(false);
       setErrorMessage(err.message);
@@ -66,15 +73,27 @@ function CreateCampaignForm() {
         </Grid>
 
         <Grid item>
-          <LoadingButton
-            loading={loading}
-            variant="contained"
-            type="submit"
-          >
+          <LoadingButton loading={loading} variant="contained" type="submit">
             Create
           </LoadingButton>
         </Grid>
       </Grid>
+      <Snackbar
+        anchorOrigin={{
+          vertical: vertical,
+          horizontal: horizontal,
+        }}
+        open={open}
+        autoHideDuration={3000}
+        key={vertical + horizontal}
+      >
+        <Alert
+          onClose={() => setOpen(false)}
+          severity="success"
+        >
+          Campaign was successfully created!
+        </Alert>
+      </Snackbar>
       <br />
       {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
     </form>

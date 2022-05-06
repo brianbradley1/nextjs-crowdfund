@@ -10,6 +10,7 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Alert from "@material-ui/lab/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 RequestIndex.getInitialProps = async ({ query }) => {
   const { address } = query;
@@ -38,10 +39,23 @@ function RequestIndex({ address, requests, requestCount, approversCount }) {
   const { Header, Row, HeaderCell, Body } = Table;
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [openApprove, setOpenApprove] = useState(false);
+  const [openFinalise, setOpenFinalise] = useState(false);
+  const [vertical, setVertical] = useState("top");
+  const [horizontal, setHorizontal] = useState("center");
+
   // Create callback function and pass to RequestRow (child) as props
   // Child component will call this and pass data back to parent
   const updateErrorMessage = (childData) => {
     setErrorMessage(childData);
+  };
+
+  const updateApprovalFlag = (childData) => {
+    setOpenApprove(childData);
+  };
+
+  const updateFinaliseFlag = (childData) => {
+    setOpenFinalise(childData);
   };
 
   const renderRows = () => {
@@ -54,6 +68,8 @@ function RequestIndex({ address, requests, requestCount, approversCount }) {
           address={address}
           approversCount={approversCount}
           updateErrorMessage={updateErrorMessage}
+          updateApprovalFlag={updateApprovalFlag}
+          updateFinaliseFlag={updateFinaliseFlag}
         />
       );
     });
@@ -64,10 +80,13 @@ function RequestIndex({ address, requests, requestCount, approversCount }) {
       <Link route={`/campaigns/${address}`}>
         <a>Back</a>
       </Link>
-      
       <Link route={`/campaigns/${address}/requests/new`}>
         <a>
-          <Button variant="contained" color="primary" style={{ float: "right" }}>
+          <Button
+            variant="contained"
+            color="primary"
+            style={{ float: "right" }}
+          >
             Add Request
           </Button>
         </a>
@@ -85,11 +104,41 @@ function RequestIndex({ address, requests, requestCount, approversCount }) {
             <TableCell>Finalize</TableCell>
           </TableRow>
         </TableHead>
-        <TableBody>
-        {renderRows()}
-        </TableBody>
+        <TableBody>{renderRows()}</TableBody>
       </Table>
-      <div>Found {requestCount} requests.</div>
+      <div>Found {requestCount} requests.</div>{" "}
+        <Snackbar
+          anchorOrigin={{
+            vertical: vertical,
+            horizontal: horizontal,
+          }}
+          open={openApprove}
+          autoHideDuration={3000}
+          key={vertical + horizontal + "1"}
+        >
+          <Alert
+            onClose={() => setOpenApprove(false)}
+            severity="success"
+          >
+            Request was successfully approved!
+          </Alert>
+        </Snackbar>
+        <Snackbar
+          anchorOrigin={{
+            vertical: vertical,
+            horizontal: horizontal,
+          }}
+          open={openFinalise}
+          autoHideDuration={3000}
+          key={vertical + horizontal + "2"}
+        >
+          <Alert
+            onClose={() => setOpenFinalise(false)}
+            severity="success"
+          >
+            Request was successfully finalised!
+          </Alert>
+        </Snackbar>
       <br />
       {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
     </Layout>

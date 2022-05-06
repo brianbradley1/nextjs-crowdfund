@@ -7,6 +7,7 @@ import web3 from "../../ethereum/web3";
 import { Link, Router } from "../../routes";
 import Layout from "../../components/Layout";
 import { LoadingButton } from "@mui/lab";
+import Snackbar from "@mui/material/Snackbar";
 
 RequestNew.getInitialProps = async ({ query }) => {
   const { address } = query;
@@ -21,6 +22,9 @@ function RequestNew({ address }) {
     description: "",
     receipient: "",
   });
+  const [open, setOpen] = useState(false);
+  const [vertical, setVertical] = useState("top");
+  const [horizontal, setHorizontal] = useState("center");
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -41,7 +45,10 @@ function RequestNew({ address }) {
           from: accounts[0],
         });
 
-      Router.pushRoute(`/campaigns/${address}/requests`);
+      setOpen(true);
+      setTimeout(() => {
+        Router.pushRoute(`/campaigns/${address}/requests`);
+      }, 3000);
     } catch (err) {
       console.log(err.message);
       setErrorMessage(err.message);
@@ -114,6 +121,22 @@ function RequestNew({ address }) {
             </LoadingButton>
           </Grid>
         </Grid>
+        <Snackbar
+        anchorOrigin={{
+          vertical: vertical,
+          horizontal: horizontal,
+        }}
+        open={open}
+        autoHideDuration={3000}
+        key={vertical + horizontal}
+      >
+        <Alert
+          onClose={() => setOpen(false)}
+          severity="success"
+        >
+          Request was successfully created!
+        </Alert>
+      </Snackbar>
         <br />
         {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
       </form>

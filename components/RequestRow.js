@@ -9,7 +9,7 @@ import TableRow from "@mui/material/TableRow";
 function RequestRow(props) {
   const [loadingApproval, setLoadingApproval] = useState(false);
   const [loadingFinalise, setLoadingFinalise] = useState(false);
-
+  
   const isReqValueGreaterThanCampaignBalance = async () => {
     const campaign = Campaign(props.address);
 
@@ -58,6 +58,7 @@ function RequestRow(props) {
         await campaign.methods.approveRequest(props.id).send({
           from: accounts[0],
         });
+        props.updateApprovalFlag(true);
       }
     } catch (err) {
       props.updateErrorMessage(err.message);
@@ -106,6 +107,7 @@ function RequestRow(props) {
         await campaign.methods.finalizeRequest(props.id).send({
           from: accounts[0],
         });
+        props.updateFinaliseFlag(true);
       }
     } catch (err) {
       props.updateErrorMessage(err.message);
