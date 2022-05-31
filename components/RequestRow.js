@@ -21,7 +21,7 @@ function RequestRow(props) {
     const requestValue = web3.utils.fromWei(props.request.value, "ether");
 
     // check if sending amount greater than remaining campaign balance
-    const isGreaterThanCampaignBalance = requestValue <= campaignBalance;
+    const isGreaterThanCampaignBalance = requestValue > campaignBalance;
     return [isGreaterThanCampaignBalance, requestValue, campaignBalance];
   };
 
@@ -81,9 +81,9 @@ function RequestRow(props) {
       const isManager = await checkIfManager();
 
       // add check to make sure request amount not > than campaign balance
-      if (isGreaterThanCampaignBalance === false) {
+      if (isGreaterThanCampaignBalance === true) {
         props.updateErrorMessage(
-          `Request amount ${requestValue} greater than remaining campaign balance of ${campaignBalance}`
+          `Request amount ${requestValue} is greater than remaining campaign balance of ${campaignBalance}`
         );
       } else if (isCorrectNoOfApprovers === false) {
         props.updateErrorMessage(

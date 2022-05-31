@@ -26,6 +26,20 @@ function RequestNew({ address }) {
   const [vertical, setVertical] = useState("top");
   const [horizontal, setHorizontal] = useState("center");
 
+  const isReqValueGreaterThanCampaignBalance = async () => {
+    const campaign = Campaign(address);
+
+    // get campaign balance
+    const summary = await campaign.methods.getSummary().call();
+    const campaignBalance = web3.utils.fromWei(summary[1], "ether");
+
+    // get sender amount
+
+    // check if sending amount greater than remaining campaign balance
+    const isGreaterThanCampaignBalance = formValues.requestValue > campaignBalance;
+    return [isGreaterThanCampaignBalance, formValues.requestValue, campaignBalance];
+  };
+
   const onSubmit = async (event) => {
     event.preventDefault();
 
@@ -33,27 +47,34 @@ function RequestNew({ address }) {
     setErrorMessage("");
 
     try {
-      const campaign = Campaign(address);
-      const accounts = await web3.eth.getAccounts();
-      await campaign.methods
-        .createRequest(
-          formValues.description,
-          web3.utils.toWei(formValues.requestValue, "ether"),
-          formValues.receipient
-        )
-        .send({
-          from: accounts[0],
-        });
+      const [isGreaterThanCampaignBalance, requestValue, campaignBalance] =
+        await isReqValueGreaterThanCampaignBalance();
 
-      setOpen(true);
-      setTimeout(() => {
-        Router.pushRoute(`/campaigns/${address}/requests`);
-      }, 3000);
+      if (isGreaterThanCampaignBalance === true) {
+        setErrorMessage(`Request amount ${requestValue} is greater than remaining campaign balance of ${campaignBalance}. Please enter a lower request amount`
+        );
+      } else {
+        const campaign = Campaign(address);
+        const accounts = await web3.eth.getAccounts();
+        await campaign.methods
+          .createRequest(
+            formValues.description,
+            web3.utils.toWei(formValues.requestValue, "ether"),
+            formValues.receipient
+          )
+          .send({
+            from: accounts[0],
+          });
+
+        setOpen(true);
+        setTimeout(() => {
+          Router.pushRoute(`/campaigns/${address}/requests`);
+        }, 3000);
+      }
     } catch (err) {
       console.log(err.message);
       setErrorMessage(err.message);
     }
-
     setLoading(false);
   };
 
@@ -122,21 +143,18 @@ function RequestNew({ address }) {
           </Grid>
         </Grid>
         <Snackbar
-        anchorOrigin={{
-          vertical: vertical,
-          horizontal: horizontal,
-        }}
-        open={open}
-        autoHideDuration={3000}
-        key={vertical + horizontal}
-      >
-        <Alert
-          onClose={() => setOpen(false)}
-          severity="success"
+          anchorOrigin={{
+            vertical: vertical,
+            horizontal: horizontal,
+          }}
+          open={open}
+          autoHideDuration={3000}
+          key={vertical + horizontal}
         >
-          Request was successfully created!
-        </Alert>
-      </Snackbar>
+          <Alert onClose={() => setOpen(false)} severity="success">
+            Request was successfully created!
+          </Alert>
+        </Snackbar>
         <br />
         {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
       </form>
