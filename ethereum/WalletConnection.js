@@ -1,76 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { useWallet, UseWalletProvider } from "use-wallet";
 import web3 from "../ethereum/web3";
 import { Button, ButtonGroup } from "@material-ui/core";
+import { useMoralis } from "react-moralis";
+import { ConnectButton } from "web3uikit";
 
-function WalletConnection() {
-  const [network, setNetwork] = useState(null);
+export default function WalletConnection() {
+  const { Moralis, isWeb3Enabled, chainId: chainIdHex } = useMoralis();
 
-  useEffect(async () => {
-    const getNetwork = async () => {
-      network = await web3.eth.net.getNetworkType();
-      setNetwork(network);
-    };
+  //const [network, setNetwork] = useState(null);
 
-    if (!network) {
-      getNetwork();
+  // useEffect(async () => {
+  //   const getNetwork = async () => {
+  //     network = await web3.eth.net.getNetworkType();
+  //     setNetwork(network);
+  //   };
+
+  //   if (!network) {
+  //     getNetwork();
+  //   }
+  // }, []);
+
+  useEffect(() => {
+    if (isWeb3Enabled) {
+      //updateUIValues();
     }
-  }, []);
+  }, [isWeb3Enabled]);
 
-  //console.log("Network outside useEffect = " + network);
+  // no list means it'll update everytime anything changes or happens
+  // empty list means it'll run once after the initial rendering
+  // and dependencies mean it'll run whenever those things in the list change
 
-  const wallet = useWallet();
-
-  // const connectWallet = async (e) => {
-  //   e.preventDefault();
-  //   await wallet.connect();
-  // };
-
-  let balance = web3.utils.fromWei(wallet.balance, "ether");
-  balance = Number(balance).toFixed(4);
-
-  return (
-    <>
-      {wallet.status === "connected" ? (
-        <div style={{ float: "right", marginLeft: "10px" }}>
-          <ButtonGroup
-            variant="contained"
-            aria-label="outlined primary button group"
-          >
-            <Button>Account: {wallet.account}</Button>
-            <Button>Balance: {balance}</Button>
-            <Button>Network: {network}</Button>
-          </ButtonGroup>
-          <Button
-            style={{ backgroundColor: "orange", color: "black" }}
-            onClick={() => wallet.reset()}
-          >
-            Disconnect
-          </Button>
-        </div>
-      ) : (
-        <div style={{ float: "right", marginLeft: "10px" }}>
-          <Button
-            style={{ backgroundColor: "orange", color: "black" }}
-            onClick={() => wallet.connect()}
-          >
-            Connect Wallet
-          </Button>
-        </div>
-      )}
-    </>
-  );
+  return <ConnectButton moralisAuth={false} />;
 }
-
-// Wrap everything in <UseWalletProvider />
-export default () => (
-  <UseWalletProvider
-    chainId={4}
-    connectors={{
-      // This is how connectors get configured
-      provided: { provider: web3 },
-    }}
-  >
-    <WalletConnection />
-  </UseWalletProvider>
-);
