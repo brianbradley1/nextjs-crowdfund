@@ -1,12 +1,16 @@
 import { ConnectButton } from "web3uikit"
+import { AppBar, Toolbar } from "@mui/material";
+import Link from "next/link";
 
 export default function Header() {
     return (
-        <nav className="p-5 border-b-2 flex flex-row">
-            <h1 className="py-4 px-4 font-bold text-3xl"> Crowdfund</h1>
-            <div className="ml-auto py-2 px-4">
-                <ConnectButton moralisAuth={false} />
-            </div>
-        </nav>
+        <AppBar color="primary">
+            <Toolbar sx={{ justifyContent: "space-between" }}>
+                <Link href="/">
+                        Crowdfund
+                </Link>
+                    <ConnectButton moralisAuth={false} />
+            </Toolbar>
+        </AppBar>
     )
 }
