@@ -1,16 +1,13 @@
 import React, { useState } from "react"
-import { Grid, Button, TextField, Snackbar } from "@mui/material"
-//import { Router } from "../routes";
-import { LoadingButton, Alert } from "@mui/lab"
-import { factoryAddresses, factoryAbi, campaignAbi } from "../components/Factory"
+import { Grid, TextField, Snackbar, Alert } from "@mui/material"
+import Router from 'next/router'
+import { LoadingButton } from "@mui/lab"
+import { factoryAddresses, factoryAbi } from "../components/Factory"
 import { useWeb3Contract, useMoralis } from "react-moralis"
-import { ethers } from "ethers"
 
 const defaultValues = {
     minimumContribution: "",
 }
-
-// createCampaign doesnt exist? Maybe need to add campaign abi....
 
 function CreateCampaignForm() {
     const [loading, setLoading] = useState(false)
@@ -22,11 +19,18 @@ function CreateCampaignForm() {
 
     const { Moralis, isWeb3Enabled, chainId: chainIdHex } = useMoralis()
     const chainId = parseInt(chainIdHex)
-    // console.log(`ChainId is ${chainId}`)
     const factoryAddress = chainId in factoryAddresses ? factoryAddresses[chainId][0] : null
 
-    //     setErrorMessage("")
-    //     setLoading(true)
+    const onSubmit = async (event) => {
+        event.preventDefault()
+        setErrorMessage("")
+        setLoading(true)
+
+        await createCampaign({
+            onSuccess: handleSuccess,
+            onError: handleError,
+        })
+    }
 
     const { runContractFunction: createCampaign } = useWeb3Contract({
         abi: factoryAbi,
@@ -37,32 +41,6 @@ function CreateCampaignForm() {
         },
     })
 
-    /* View Functions */
-
-    // Will need to get the deployed campaigns first
-
-    // try {
-    //   const accounts = await web3.eth.getAccounts();
-
-    //   await factory.methods
-    //     .createCampaign(
-    //       web3.utils.toWei(formValues.minimumContribution, "ether")
-    //     )
-    //     .send({
-    //       from: accounts[0],
-    //     });
-
-    //   setOpen(true);
-    //   setTimeout(() => {
-    //     Router.pushRoute("/");
-    //   }, 3000);
-    // } catch (err) {
-    //   setLoading(false);
-    //   setErrorMessage(err.message);
-    // }
-    //setLoading(false)
-    //}
-
     const handleInputChange = (e) => {
         const { name, value } = e.target
         setFormValues({
@@ -71,12 +49,26 @@ function CreateCampaignForm() {
         })
     }
 
-    //Probably could add some error handling
     const handleSuccess = async (tx) => {
         await tx.wait(1)
-        console.log("campaign was created")
-        //updateUIValues()
-        //handleNewNotification(tx)
+        setOpen(true)
+        setLoading(false)
+        setTimeout(() => {
+            Router.push("/");
+          }, 3000);
+    }
+
+    const handleError = async (error) => {
+        console.log(error.message)
+        if (error.message !== undefined)
+        {
+            setErrorMessage(error.message)
+        }
+        else
+        {
+            setErrorMessage(error)
+        }
+        setLoading(false)
     }
 
     return (
@@ -96,42 +88,32 @@ function CreateCampaignForm() {
                 </Grid>
 
                 <Grid item>
-                    {/* <LoadingButton variant="contained" type="submit">
-            Create
-          </LoadingButton> */}
-                    <Button
+                    <LoadingButton
                         variant="contained"
                         color="primary"
-                        onClick={async () =>
-                            // try and refactor this be adding an event (18hr 03min)
-                            await createCampaign({
-                                onSuccess: handleSuccess,
-                                onError: (error) => console.log(error),
-                            })
-                        }
+                        type="submit"
+                        loading={loading}
+                        onClick={onSubmit}
                     >
                         Create
-                    </Button>
+                    </LoadingButton>
                 </Grid>
             </Grid>
-            {/* <Snackbar
-        anchorOrigin={{
-          vertical: vertical,
-          horizontal: horizontal,
-        }}
-        open={open}
-        autoHideDuration={3000}
-        key={vertical + horizontal}
-      >
-        <Alert
-          onClose={() => setOpen(false)}
-          severity="success"
-        >
-          Campaign was successfully created!
-        </Alert>
-      </Snackbar>
-      <br />
-      {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>} */}
+            <Snackbar
+                anchorOrigin={{
+                    vertical: vertical,
+                    horizontal: horizontal,
+                }}
+                open={open}
+                autoHideDuration={3000}
+                key={vertical + horizontal}
+            >
+                <Alert onClose={() => setOpen(false)} severity="success">
+                    Campaign was successfully created!
+                </Alert>
+            </Snackbar>
+            <br />
+            {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
         </form>
     )
 }
