@@ -7,6 +7,7 @@ import { useMoralis } from "react-moralis"
 import { campaignAbi } from "../../components/Factory"
 import { useRouter } from "next/router"
 import { ethers } from "ethers"
+import ContributeForm from "../../components/ContributeForm";
 
 function CampaignShow() {
     const { Moralis, isWeb3Enabled, chainId: chainIdHex } = useMoralis()
@@ -126,7 +127,7 @@ function CampaignShow() {
                     {renderCards()}
                 </Grid>
                 <Grid item xs={4}>
-                    {/* <ContributeForm address={campaignAddress} /> */}
+                    <ContributeForm address={campaignAddress} />
                 </Grid>
             </Grid>
 
