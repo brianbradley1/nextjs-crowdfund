@@ -1,4 +1,4 @@
-import React, { Component } from "react"
+import React from "react"
 import CreateCampaignForm from "../../components/CreateCampaignForm"
 import Layout from "../../components/Layout"
 

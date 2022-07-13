@@ -1,45 +1,28 @@
-// imports instead of require
-// nodejs != emcascript / javascript
-// backend js bit diff to front end js
-
-import Head from "next/head"
-import Header from "../components/Header"
-import styles from "../styles/Home.module.css"
-import {
-    Typography,
-    Card,
-    CardActions,
-    CardContent,
-    CardMedia,
-    CssBaseline,
-    Grid,
-    Button,
-    Container
-} from "@mui/material"
+import { Typography, Card, CardActions, CardContent, Grid, Button, Container } from "@mui/material"
 import Link from "next/link"
 import { useWeb3Contract, useMoralis } from "react-moralis"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { factoryAddresses, factoryAbi } from "../components/Factory"
 import Layout from "../components/Layout"
 
 let campaigns
 
-export default function Home() {
+function Home() {
     const { Moralis, isWeb3Enabled, chainId: chainIdHex } = useMoralis()
-    // These get re-rendered every time due to our connect button!
     const chainId = parseInt(chainIdHex)
-    const factoryAddress = chainId in factoryAddresses ? factoryAddresses[chainId][0] : null
+    const address = chainId in factoryAddresses ? factoryAddresses[chainId][0] : null
 
     /* View Functions */
     const { runContractFunction: getDeployedCampaigns } = useWeb3Contract({
         abi: factoryAbi,
-        contractAddress: factoryAddress, // specify the networkId
+        contractAddress: address, // specify the networkId
         functionName: "getDeployedCampaigns",
         params: {},
     })
 
     async function getDeployedCampaignsCall() {
         campaigns = await getDeployedCampaigns()
+        console.log(`Number of campaigns = ${campaigns}`)
     }
 
     useEffect(() => {
@@ -86,8 +69,15 @@ export default function Home() {
                                             </Typography>
                                         </CardContent>
                                         <CardActions>
-                                            <Link href={`/campaigns/${address}`}>
-                                                <a style={{textDecoration: "none"}}>View Campaign</a>
+                                            <Link
+                                                href={{
+                                                    pathname: "/campaigns/show/",
+                                                    query: { address: address },
+                                                }}
+                                            >
+                                                <a style={{ textDecoration: "none" }}>
+                                                    View Campaign
+                                                </a>
                                             </Link>
                                         </CardActions>
                                     </Card>
@@ -102,3 +92,5 @@ export default function Home() {
         </div>
     )
 }
+
+export default Home
