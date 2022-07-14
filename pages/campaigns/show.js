@@ -2,16 +2,15 @@ import React from "react"
 import { useEffect, useState } from "react"
 import Layout from "../../components/Layout"
 import Link from "next/link"
-import { Card, CardContent, Typography, Grid } from "@mui/material"
+import { Card, CardContent, Typography, Grid, Button } from "@mui/material"
 import { useMoralis } from "react-moralis"
 import { campaignAbi } from "../../components/Factory"
 import { useRouter } from "next/router"
 import { ethers } from "ethers"
-import ContributeForm from "../../components/ContributeForm";
+import ContributeForm from "../../components/ContributeForm"
 
 function CampaignShow() {
-    const { Moralis, isWeb3Enabled, chainId: chainIdHex } = useMoralis()
-    const chainId = parseInt(chainIdHex)
+    const { Moralis, isWeb3Enabled } = useMoralis()
     const router = useRouter()
 
     const [campaignAddress, setCampaignAddress] = useState("")
@@ -132,13 +131,23 @@ function CampaignShow() {
             </Grid>
 
             <br />
-            {/* <Link route={`/campaigns/${campaignAddress}/requests`}>
-                <a>
-                    <Button variant="contained" color="primary">
+            <Link
+                href={{
+                    pathname: "/requests/",
+                    query: { address: campaignAddress },
+                }}
+            >
+                <a style={{ textDecoration: "none" }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        style={{ margin: "0px 10px 20px 10px" }}
+                    >
                         View Requests
                     </Button>
                 </a>
-            </Link> */}
+            </Link>
+            <br />
         </Layout>
     )
 }

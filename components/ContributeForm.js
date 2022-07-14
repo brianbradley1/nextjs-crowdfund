@@ -46,7 +46,7 @@ function ContributeForm({ address }) {
 
         setTimeout(() => {
             router.reload(router.asPath)
-        }, 3000)
+        }, 2000)
     }
 
     const handleError = async (error) => {

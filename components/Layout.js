@@ -15,7 +15,7 @@ const Layout = (props) => {
             <Header />
 
             <Header />
-            <div style={{ marginTop: "120px" }}></div>
+            <div style={{ marginTop: "90px" }}></div>
             {props.children}
         </Container>
     )
