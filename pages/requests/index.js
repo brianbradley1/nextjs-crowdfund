@@ -14,9 +14,14 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 import { campaignAbi } from "../../components/Factory"
 import { useWeb3Contract, useMoralis } from "react-moralis"
-//import RequestRow from "../../components/RequestRow";
+import RequestRow from "../../components/RequestRow"
 
-function RequestIndex() {
+RequestIndex.getInitialProps = async ({ query }) => {
+    const { address } = query
+    return { address }
+}
+
+function RequestIndex({ address }) {
     const { Moralis, isWeb3Enabled } = useMoralis()
     const { Header, Row, HeaderCell, Body } = Table
     const [errorMessage, setErrorMessage] = useState("")
@@ -26,13 +31,13 @@ function RequestIndex() {
     const [vertical, setVertical] = useState("top")
     const [horizontal, setHorizontal] = useState("center")
 
-    const [campaignAddress, setCampaignAddress] = useState("")
     const [requestsCount, setRequestsCount] = useState(0)
     const [approversCount, setApproversCount] = useState(0)
     const [requests, setRequests] = useState([])
 
     async function getRequest(index) {
-        const options = { abi: campaignAbi.abi, contractAddress: campaignAddress }
+        // TODO - Refactor options
+        const options = { abi: campaignAbi.abi, contractAddress: address }
         const requestFromCall = await Moralis.executeFunction({
             functionName: "getRequest",
             ...options,
@@ -43,23 +48,33 @@ function RequestIndex() {
         return requestFromCall
     }
 
-    async function getRequests() {
-        let requests = []
-        // TODO - Refactor
+    // TODO - Refactor
+    async function setRequestFunction() {
+        let requestArr = []
+        let requestNew = []
         if (requestsCount > 0) {
             for (let i = 0; i < requestsCount; i++) {
+                requestArr = [];
                 const request = await getRequest(i)
                 for (let j = 0; j < request.length; j++) {
                     const element = request[j]
+                    // TODO - refactor below - need to check for bigint rather than object
                     if (typeof element === "object") {
-                        requests.push(Number(element))
+                        requestArr.push(Number(element))
                     } else {
-                        requests.push(element)
+                        requestArr.push(element)
                     }
                 }
+                // convert array items to obj format
+                var requestObj = requestArr.reduce(function (acc, cur, i) {
+                    acc[i] = cur
+                    return acc
+                }, {})
+                requestNew.push(requestObj)
             }
+            console.log(requestNew)
+            setRequests(requestNew)
         }
-        setRequests(requests)
     }
 
     async function updateUIValues(abi, address) {
@@ -81,19 +96,14 @@ function RequestIndex() {
     const router = useRouter()
 
     useEffect(() => {
-        if (router.isReady) {
+        if (isWeb3Enabled) {
             const { address } = router.query
-            setCampaignAddress(address)
             updateUIValues(campaignAbi.abi, address)
-            getRequests()
-            //console.log(requests)
+            console.log("request count useEffect = " + requestsCount)
+            setRequestFunction()
+            console.log(requests)
         }
-    }, [router.isReady])
-
-    // useEffect(() => {
-    //     console.log(typeof requests)
-    //     console.log(requests)
-    // }, [requestsCount])
+    }, [requestsCount, isWeb3Enabled])
 
     // Create callback function and pass to RequestRow (child) as props
     // Child component will call this and pass data back to parent
@@ -109,22 +119,22 @@ function RequestIndex() {
         setOpenFinalise(childData)
     }
 
-      const renderRows = () => {
+    const renderRows = () => {
         return requests.map((request, index) => {
-          return (
-            <RequestRow
-              key={index}
-              id={index}
-              request={request}
-              address={campaignAddress}
-              approversCount={approversCount}
-              updateErrorMessage={updateErrorMessage}
-              updateApprovalFlag={updateApprovalFlag}
-              updateFinaliseFlag={updateFinaliseFlag}
-            />
-          );
-        });
-      };
+            return (
+                <RequestRow
+                    key={index}
+                    id={index}
+                    request={request}
+                    address={address}
+                    approversCount={approversCount}
+                    updateErrorMessage={updateErrorMessage}
+                    updateApprovalFlag={updateApprovalFlag}
+                    updateFinaliseFlag={updateFinaliseFlag}
+                />
+            )
+        })
+    }
 
     return (
         <Layout>
@@ -136,7 +146,7 @@ function RequestIndex() {
             <Link
                 href={{
                     pathname: "/requests/new",
-                    query: { address: campaignAddress },
+                    query: { address: address },
                 }}
             >
                 <a>
@@ -158,7 +168,7 @@ function RequestIndex() {
                         <TableCell>Finalize</TableCell>
                     </TableRow>
                 </TableHead>
-                {/* <TableBody>{renderRows()}</TableBody> */}
+                <TableBody>{renderRows()}</TableBody>
             </Table>
             <div>Found {requestsCount} requests.</div>{" "}
             <Snackbar
