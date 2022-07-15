@@ -60,13 +60,13 @@ function CreateCampaignForm() {
 
     const handleError = async (error) => {
         console.log(error.message)
-        if (error.message !== undefined)
+        if (error.data) 
         {
-            setErrorMessage(error.message)
+            setErrorMessage(error.data.message)
         }
         else
         {
-            setErrorMessage(error)
+            setErrorMessage(error.message)
         }
         setLoading(false)
     }

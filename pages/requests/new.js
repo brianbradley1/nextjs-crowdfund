@@ -87,11 +87,10 @@ function RequestNew() {
     }
 
     const handleError = async (error) => {
-        console.log(error.message)
-        if (error.message !== undefined) {
-            setErrorMessage(error.message)
+        if (error.data) {
+            setErrorMessage(error.data.message)
         } else {
-            setErrorMessage(error)
+            setErrorMessage(error.message)
         }
         setLoading(false)
     }
