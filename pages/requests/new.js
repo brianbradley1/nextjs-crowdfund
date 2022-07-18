@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { Grid, Alert, TextField, Snackbar, Button } from "@mui/material"
 import { LoadingButton } from "@mui/lab"
-import Link from "next/link"
 import { useRouter } from "next/router"
 import Layout from "../../components/Layout"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { campaignAbi } from "../../components/Factory"
 
-function RequestNew() {
+RequestNew.getInitialProps = async ({ query }) => {
+    const { address } = query
+    return { address }
+}
+
+function RequestNew({address}) {
     const { Moralis, isWeb3Enabled } = useMoralis()
-    const [campaignAddress, setCampaignAddress] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
     const [loading, setLoading] = useState(false)
     const [formValues, setFormValues] = useState({
@@ -23,41 +26,10 @@ function RequestNew() {
 
     const router = useRouter()
 
-    useEffect(() => {
-        if (router.isReady) {
-            const { address } = router.query
-            setCampaignAddress(address)
-            //updateUIValues(campaignAbi.abi, address)
-        }
-    }, [router.isReady])
-
-    // const isReqValueGreaterThanCampaignBalance = async () => {
-    //     const campaign = Campaign(address)
-
-    //     // get campaign balance
-    //     const summary = await campaign.methods.getSummary().call()
-    //     const campaignBalance = web3.utils.fromWei(summary[1], "ether")
-
-    //     // get sender amount
-
-    //     // check if sending amount greater than remaining campaign balance
-    //     const isGreaterThanCampaignBalance = formValues.requestValue > campaignBalance
-    //     return [isGreaterThanCampaignBalance, formValues.requestValue, campaignBalance]
-    // }
-
     const onSubmit = async (event) => {
         event.preventDefault()
         setLoading(true)
         setErrorMessage("")
-
-        // const [isGreaterThanCampaignBalance, requestValue, campaignBalance] =
-        //     await isReqValueGreaterThanCampaignBalance()
-
-        // if (isGreaterThanCampaignBalance === true) {
-        //     setErrorMessage(
-        //         `Request amount ${requestValue} is greater than remaining campaign balance of ${campaignBalance}. Please enter a lower request amount`
-        //     )
-        // } else {
 
         await createRequest({
             onSuccess: handleSuccess,
@@ -67,7 +39,7 @@ function RequestNew() {
 
     const { runContractFunction: createRequest } = useWeb3Contract({
         abi: campaignAbi.abi,
-        contractAddress: campaignAddress,
+        contractAddress: address,
         functionName: "createRequest",
         params: {
             _description: formValues.description,

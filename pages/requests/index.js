@@ -99,9 +99,7 @@ function RequestIndex({ address }) {
         if (isWeb3Enabled) {
             const { address } = router.query
             updateUIValues(campaignAbi.abi, address)
-            console.log("request count useEffect = " + requestsCount)
             setRequestFunction()
-            console.log(requests)
         }
     }, [requestsCount, isWeb3Enabled])
 

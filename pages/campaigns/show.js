@@ -9,16 +9,20 @@ import { useRouter } from "next/router"
 import { ethers } from "ethers"
 import ContributeForm from "../../components/ContributeForm"
 
-function CampaignShow() {
-    const { Moralis, isWeb3Enabled } = useMoralis()
-    const router = useRouter()
+CampaignShow.getInitialProps = async ({ query }) => {
+    const { address } = query
+    return { address }
+}
 
-    const [campaignAddress, setCampaignAddress] = useState("")
+function CampaignShow({address}) {
+    const { Moralis, isWeb3Enabled } = useMoralis()
     const [manager, setManager] = useState("")
     const [minimumContribution, setMinimumContribution] = useState("")
     const [requestsCount, setRequestsCount] = useState(0)
     const [approversCount, setApproversCount] = useState(0)
     const [contractBalance, setContractBalance] = useState(0)
+
+    const router = useRouter()
 
     async function updateUIValues(abi, address) {
         const options = { abi: abi, contractAddress: address }
@@ -53,8 +57,6 @@ function CampaignShow() {
 
     useEffect(() => {
         if (router.isReady && isWeb3Enabled) {
-            const { address } = router.query
-            setCampaignAddress(address)
             updateUIValues(campaignAbi.abi, address)
         }
     }, [router.isReady, isWeb3Enabled])
@@ -126,7 +128,7 @@ function CampaignShow() {
                     {renderCards()}
                 </Grid>
                 <Grid item xs={4}>
-                    <ContributeForm address={campaignAddress} />
+                    <ContributeForm address={address} />
                 </Grid>
             </Grid>
 
@@ -134,7 +136,7 @@ function CampaignShow() {
             <Link
                 href={{
                     pathname: "/requests/",
-                    query: { address: campaignAddress },
+                    query: { address: address },
                 }}
             >
                 <a style={{ textDecoration: "none" }}>
