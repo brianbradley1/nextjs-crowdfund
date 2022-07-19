@@ -4,6 +4,7 @@ import { LoadingButton } from "@mui/lab"
 import { TableCell, TableRow } from "@mui/material"
 import { useWeb3Contract } from "react-moralis"
 import { campaignAbi } from "./Factory"
+import { ethers } from "ethers"
 
 function RequestRow(props) {
     const [loadingApproval, setLoadingApproval] = useState(false)
@@ -11,6 +12,8 @@ function RequestRow(props) {
     const router = useRouter()
 
     const { id, request, approversCount, address } = props
+    //const [ description, value, recipient, complete, approvalCount ] = request;
+
     const readyToFinalize = request[4] > approversCount / 2
 
     const onApprove = async () => {
@@ -85,6 +88,7 @@ function RequestRow(props) {
     // Request[3] = Complete
     // Request[4] = ApprovalCount
 
+
     return (
         <TableRow
             key={id}
@@ -94,7 +98,7 @@ function RequestRow(props) {
         >
             <TableCell>{id}</TableCell>
             <TableCell>{request[0]}</TableCell>
-            <TableCell>{request[1]}</TableCell>
+            <TableCell>{ethers.utils.formatUnits(request[1], "ether")}</TableCell>
             <TableCell>{request[2]}</TableCell>
             <TableCell>
                 {request[4]}/{approversCount}

@@ -17,7 +17,7 @@ CampaignShow.getInitialProps = async ({ query }) => {
 function CampaignShow({address}) {
     const { Moralis, isWeb3Enabled } = useMoralis()
     const [manager, setManager] = useState("")
-    const [minimumContribution, setMinimumContribution] = useState("")
+    const [minimumContribution, setMinimumContribution] = useState(0)
     const [requestsCount, setRequestsCount] = useState(0)
     const [approversCount, setApproversCount] = useState(0)
     const [contractBalance, setContractBalance] = useState(0)
@@ -49,10 +49,10 @@ function CampaignShow({address}) {
             ...options,
         })
         setManager(managerFromCall)
-        setMinimumContribution(Number(minContribuitionFromCall))
+        setMinimumContribution(minContribuitionFromCall)
         setRequestsCount(Number(requestsCountFromCall))
         setApproversCount(Number(approversCountFromCall))
-        setContractBalance(Number(contractBalanceFromCall))
+        setContractBalance(contractBalanceFromCall)
     }
 
     useEffect(() => {
@@ -72,7 +72,7 @@ function CampaignShow({address}) {
             },
             {
                 id: 2,
-                header: minimumContribution,
+                header: ethers.utils.formatUnits(minimumContribution, "ether"),
                 meta: "Minimum Contribution (ether)",
                 description: "You must contribute at least this much ether and be an approver",
             },
@@ -91,7 +91,7 @@ function CampaignShow({address}) {
             },
             {
                 id: 5,
-                header: contractBalance,
+                header: ethers.utils.formatUnits(contractBalance, "ether"),
                 meta: "Campaign Balance (ether)",
                 description: "Balance this campaign has left to spend",
             },

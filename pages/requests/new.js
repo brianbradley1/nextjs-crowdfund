@@ -5,6 +5,7 @@ import { useRouter } from "next/router"
 import Layout from "../../components/Layout"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { campaignAbi } from "../../components/Factory"
+import { ethers } from "ethers"
 
 RequestNew.getInitialProps = async ({ query }) => {
     const { address } = query
@@ -43,7 +44,7 @@ function RequestNew({address}) {
         functionName: "createRequest",
         params: {
             _description: formValues.description,
-            _value: formValues.requestValue,
+            _value: ethers.utils.parseEther(formValues.requestValue || "0"),
             _recipient: formValues.receipient,
         },
     })
@@ -59,10 +60,14 @@ function RequestNew({address}) {
     }
 
     const handleError = async (error) => {
+        console.log("error = " + error)
         if (error.data) {
             setErrorMessage(error.data.message)
-        } else {
+        } else if (error.message) {
             setErrorMessage(error.message)
+        }
+        else if (error) {
+            setErrorMessage(error)
         }
         setLoading(false)
     }

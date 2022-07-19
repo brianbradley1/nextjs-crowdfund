@@ -4,6 +4,7 @@ import { LoadingButton } from "@mui/lab"
 import { useWeb3Contract, useMoralis } from "react-moralis"
 import { campaignAbi } from "./Factory"
 import { useRouter } from "next/router"
+import { ethers } from "ethers"
 
 function ContributeForm({ address }) {
     const [loading, setLoading] = useState(false)
@@ -30,7 +31,7 @@ function ContributeForm({ address }) {
         abi: campaignAbi.abi,
         contractAddress: address,
         functionName: "contribute",
-        msgValue: contribution,
+        msgValue: ethers.utils.parseEther(contribution || "0"),
         params: {},
     })
 
