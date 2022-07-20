@@ -6,21 +6,24 @@ import Layout from "../../components/Layout"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { campaignAbi } from "../../components/Factory"
 import { ethers } from "ethers"
+import { regexEtherVal } from "../../utils/Regex"
 
 RequestNew.getInitialProps = async ({ query }) => {
     const { address } = query
     return { address }
 }
 
-function RequestNew({address}) {
+const defaultValues = {
+    requestValue: "",
+    description: "",
+    receipient: "",
+}
+
+function RequestNew({ address }) {
     const { Moralis, isWeb3Enabled } = useMoralis()
     const [errorMessage, setErrorMessage] = useState("")
     const [loading, setLoading] = useState(false)
-    const [formValues, setFormValues] = useState({
-        requestValue: "",
-        description: "",
-        receipient: "",
-    })
+    const [formValues, setFormValues] = useState(defaultValues)
     const [open, setOpen] = useState(false)
     const [vertical, setVertical] = useState("top")
     const [horizontal, setHorizontal] = useState("center")
@@ -32,10 +35,19 @@ function RequestNew({address}) {
         setLoading(true)
         setErrorMessage("")
 
-        await createRequest({
-            onSuccess: handleSuccess,
-            onError: handleError,
-        })
+        if (formValues.requestValue && formValues.description && formValues.receipient) {
+            await createRequest({
+                onSuccess: handleSuccess,
+                onError: handleError,
+            })
+        } else {
+            setLoading(false)
+            setErrorMessage(
+                ` ${formValues.requestValue ? "" : "requestValue is required, "} 
+                  ${formValues.description ? "" : "description is required, "
+                } ${formValues.receipient ? "" : "receipient is required"}`
+            )
+        }
     }
 
     const { runContractFunction: createRequest } = useWeb3Contract({
@@ -65,8 +77,7 @@ function RequestNew({address}) {
             setErrorMessage(error.data.message)
         } else if (error.message) {
             setErrorMessage(error.message)
-        }
-        else if (error) {
+        } else if (error) {
             setErrorMessage(error)
         }
         setLoading(false)
@@ -74,10 +85,21 @@ function RequestNew({address}) {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
-        setFormValues({
-            ...formValues,
-            [name]: value,
-        })
+        if (name == "requestValue") {
+            if (value.match(regexEtherVal)) {
+                setFormValues({
+                    ...formValues,
+                    [name]: value,
+                })
+            } else {
+                console.log("invalid request value")
+            }
+        } else {
+            setFormValues({
+                ...formValues,
+                [name]: value,
+            })
+        }
     }
 
     return (

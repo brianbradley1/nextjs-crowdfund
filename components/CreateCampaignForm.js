@@ -5,6 +5,12 @@ import { LoadingButton } from "@mui/lab"
 import { factoryAddresses, factoryAbi } from "../components/Factory"
 import { useWeb3Contract, useMoralis } from "react-moralis"
 import { ethers } from "ethers"
+import { regexEtherVal } from "../utils/Regex"
+
+const defaultValues = {
+    minimumContribution: "",
+    // description: "",
+}
 
 function CreateCampaignForm() {
     const [loading, setLoading] = useState(false)
@@ -12,7 +18,7 @@ function CreateCampaignForm() {
     const [open, setOpen] = useState(false)
     const [vertical, setVertical] = useState("top")
     const [horizontal, setHorizontal] = useState("center")
-    const [minimumContribution, setMinimumContribution] = useState("")
+    const [formValues, setFormValues] = useState(defaultValues)
 
     const { Moralis, isWeb3Enabled, chainId: chainIdHex } = useMoralis()
     const chainId = parseInt(chainIdHex)
@@ -24,10 +30,15 @@ function CreateCampaignForm() {
         setErrorMessage("")
         setLoading(true)
 
-        await createCampaign({
-            onSuccess: handleSuccess,
-            onError: handleError,
-        })
+        if (formValues.minimumContribution) {
+            await createCampaign({
+                onSuccess: handleSuccess,
+                onError: handleError,
+            })
+        } else {
+            setLoading(false)
+            setErrorMessage(`${formValues.minimumContribution ? "" : "minimumContribution is required"}`);
+        }
     }
 
     const { runContractFunction: createCampaign } = useWeb3Contract({
@@ -35,12 +46,21 @@ function CreateCampaignForm() {
         contractAddress: factoryAddress,
         functionName: "createCampaign",
         params: {
-            minimum: ethers.utils.parseEther(minimumContribution || "0"),
+            minimum: ethers.utils.parseEther(formValues.minimumContribution || "0"),
+            description: formValues.description,
         },
     })
 
     const handleInputChange = (e) => {
-        setMinimumContribution(e.target.value)
+        const {name, value} = e.target;
+        if (value.match(regexEtherVal)) {
+            setFormValues({
+            ...formValues,
+            [name]: value,
+        })
+        } else {
+            console.log("invalid")
+        }
     }
 
     const handleSuccess = async (tx) => {
@@ -74,10 +94,21 @@ function CreateCampaignForm() {
                         name="minimumContribution"
                         label="ether"
                         type="text"
-                        value={minimumContribution}
+                        value={formValues.minimumContribution}
                         onChange={handleInputChange}
                     />
                 </Grid>
+
+                {/* <Grid item>
+                    <TextField
+                        id="description-input"
+                        name="description"
+                        label="description"
+                        type="text"
+                        value={formValues.description}
+                        onChange={handleInputChange}
+                    />
+                </Grid> */}
 
                 <Grid item>
                     <LoadingButton

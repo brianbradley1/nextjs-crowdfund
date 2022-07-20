@@ -5,6 +5,7 @@ import { useWeb3Contract, useMoralis } from "react-moralis"
 import { campaignAbi } from "./Factory"
 import { useRouter } from "next/router"
 import { ethers } from "ethers"
+import { regexEtherVal } from "../utils/Regex"
 
 function ContributeForm({ address }) {
     const [loading, setLoading] = useState(false)
@@ -21,10 +22,15 @@ function ContributeForm({ address }) {
         setErrorMessage("")
         setLoading(true)
 
-        await contribute({
-            onSuccess: handleSuccess,
-            onError: handleError,
-        })
+        if (contribution) {
+            await contribute({
+                onSuccess: handleSuccess,
+                onError: handleError,
+            })
+        } else {
+            setLoading(false)
+            setErrorMessage(`${contribution ? "" : "contribution is required"}`);
+        }
     }
 
     const { runContractFunction: contribute } = useWeb3Contract({
@@ -36,8 +42,7 @@ function ContributeForm({ address }) {
     })
 
     const handleInputChange = (e) => {
-        const eventVal = e.target.value
-        setContributionValue(eventVal)
+        if (e.target.value.match(regexEtherVal)) setContributionValue(e.target.value)
     }
 
     const handleSuccess = async (tx) => {
