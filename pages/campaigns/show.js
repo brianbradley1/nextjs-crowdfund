@@ -14,6 +14,7 @@ CampaignShow.getInitialProps = async ({ query }) => {
     return { address }
 }
 
+
 function CampaignShow({address}) {
     const { Moralis, isWeb3Enabled } = useMoralis()
     const [manager, setManager] = useState("")
@@ -56,10 +57,10 @@ function CampaignShow({address}) {
     }
 
     useEffect(() => {
-        if (router.isReady && isWeb3Enabled) {
+        if (isWeb3Enabled) {
             updateUIValues(campaignAbi.abi, address)
         }
-    }, [router.isReady, isWeb3Enabled])
+    }, [router, isWeb3Enabled])
 
     const renderCards = () => {
         const items = [

@@ -57,7 +57,7 @@ function RequestRow(props) {
         setLoadingApproval(false)
 
         setTimeout(() => {
-            router.reload(router.asPath)
+            router.replace(router.asPath)
         }, 2000)
     }
 
@@ -67,7 +67,7 @@ function RequestRow(props) {
         setLoadingFinalize(false)
 
         setTimeout(() => {
-            router.reload(router.asPath)
+            router.replace(router.asPath)
         }, 2000)
     }
 
@@ -91,7 +91,7 @@ function RequestRow(props) {
         >
             <TableCell>{id}</TableCell>
             <TableCell>{description}</TableCell>
-            <TableCell>{ethers.utils.formatUnits(value, "ether")}</TableCell>
+            <TableCell>{ethers.utils.formatUnits(value.toString(), "ether")}</TableCell>
             <TableCell>{recipient}</TableCell>
             <TableCell>
                 {approvalCount}/{approversCount}

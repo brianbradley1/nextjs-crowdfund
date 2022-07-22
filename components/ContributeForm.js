@@ -29,7 +29,7 @@ function ContributeForm({ address }) {
             })
         } else {
             setLoading(false)
-            setErrorMessage(`${contribution ? "" : "contribution is required"}`);
+            setErrorMessage(`${contribution ? "" : "contribution is required"}`)
         }
     }
 
@@ -51,7 +51,7 @@ function ContributeForm({ address }) {
         setLoading(false)
 
         setTimeout(() => {
-            router.reload(router.asPath)
+            router.replace(router.asPath)
         }, 2000)
     }
 

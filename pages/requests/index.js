@@ -101,7 +101,7 @@ function RequestIndex({ address }) {
             updateUIValues(campaignAbi.abi, address)
             setRequestFunction()
         }
-    }, [requestsCount, isWeb3Enabled])
+    }, [requestsCount, isWeb3Enabled, router])
 
     // Create callback function and pass to RequestRow (child) as props
     // Child component will call this and pass data back to parent
