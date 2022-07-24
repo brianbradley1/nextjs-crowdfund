@@ -11,15 +11,15 @@ function RequestRow(props) {
     const [loadingFinalize, setLoadingFinalize] = useState(false)
     const router = useRouter()
 
-    const { id, request, approversCount, address } = props
-    const { 0: description, 1: value, 2: recipient, 3: complete, 4: approvalCount } = request
-    const readyToFinalize = approvalCount > approversCount / 2
+    const { id, description, value, recipient, complete, approvalCount, approversCount, address } = props
+    // const readyToFinalize = approvalCount > approversCount / 2
 
     const onApprove = async () => {
         setLoadingApproval(true)
         props.updateErrorMessage("")
+        console.log(approve)
         await approveRequest({
-            onSuccess: handleSuccess,
+            onSuccess: handleSuccessApprove,
             onError: handleError,
         })
     }
@@ -51,7 +51,7 @@ function RequestRow(props) {
         },
     })
 
-    const handleSuccess = async (tx) => {
+    const handleSuccessApprove = async (tx) => {
         await tx.wait(1)
         props.updateApprovalFlag(true)
         setLoadingApproval(false)
@@ -87,7 +87,7 @@ function RequestRow(props) {
             key={id}
             sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             disabled={description}
-            positive={readyToFinalize && !complete}
+            // positive={readyToFinalize && !complete}
         >
             <TableCell>{id}</TableCell>
             <TableCell>{description}</TableCell>
@@ -100,7 +100,7 @@ function RequestRow(props) {
                 {complete ? null : (
                     <LoadingButton
                         loading={loadingApproval}
-                        disabled={readyToFinalize && !complete}
+                        // disabled={readyToFinalize && !complete}
                         variant="contained"
                         onClick={onApprove}
                     >
@@ -113,7 +113,7 @@ function RequestRow(props) {
                     <LoadingButton
                         loading={loadingFinalize}
                         variant="contained"
-                        disabled={!readyToFinalize && !complete}
+                        // disabled={!readyToFinalize && !complete}
                         onClick={onFinalize}
                     >
                         Finalise

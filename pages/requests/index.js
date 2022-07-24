@@ -34,10 +34,10 @@ function RequestIndex({ address }) {
     const [requestsCount, setRequestsCount] = useState(0)
     const [approversCount, setApproversCount] = useState(0)
     const [requests, setRequests] = useState([])
+    const options = { abi: campaignAbi.abi, contractAddress: address }
 
     async function getRequest(index) {
         // TODO - Refactor options
-        const options = { abi: campaignAbi.abi, contractAddress: address }
         const requestFromCall = await Moralis.executeFunction({
             functionName: "getRequest",
             ...options,
@@ -48,22 +48,16 @@ function RequestIndex({ address }) {
         return requestFromCall
     }
 
-    // TODO - Refactor
     async function setRequestFunction() {
         let requestArr = []
         let requestNew = []
         if (requestsCount > 0) {
             for (let i = 0; i < requestsCount; i++) {
-                requestArr = [];
+                requestArr = []
                 const request = await getRequest(i)
                 for (let j = 0; j < request.length; j++) {
                     const element = request[j]
-                    // TODO - refactor below - need to check for bigint rather than object
-                    if (typeof element === "object") {
-                        requestArr.push(Number(element))
-                    } else {
-                        requestArr.push(element)
-                    }
+                    requestArr.push(element)
                 }
                 // convert array items to obj format
                 var requestObj = requestArr.reduce(function (acc, cur, i) {
@@ -72,14 +66,11 @@ function RequestIndex({ address }) {
                 }, {})
                 requestNew.push(requestObj)
             }
-            console.log(requestNew)
             setRequests(requestNew)
         }
     }
 
     async function updateUIValues(abi, address) {
-        const options = { abi: abi, contractAddress: address }
-
         /* View Functions */
         const requestsCountFromCall = await Moralis.executeFunction({
             functionName: "getRequestCount",
@@ -118,12 +109,20 @@ function RequestIndex({ address }) {
     }
 
     const renderRows = () => {
+
         return requests.map((request, index) => {
+            const { 0: description, 1: value, 2: recipient, 3: complete, 4: approvalCount } = request;
+
+            console.log(request)
             return (
                 <RequestRow
                     key={index}
                     id={index}
-                    request={request}
+                    description={description}
+                    value={value}
+                    recipient={recipient}
+                    complete={complete}
+                    approvalCount={Number(approvalCount)}
                     address={address}
                     approversCount={approversCount}
                     updateErrorMessage={updateErrorMessage}
