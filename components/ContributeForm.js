@@ -1,11 +1,12 @@
 import React, { useState } from "react"
-import { Grid, TextField, Snackbar, Alert } from "@mui/material"
+import { Grid, TextField } from "@mui/material"
 import { LoadingButton } from "@mui/lab"
 import { useWeb3Contract, useMoralis } from "react-moralis"
 import { campaignAbi } from "./Factory"
 import { useRouter } from "next/router"
 import { ethers } from "ethers"
 import { regexEtherVal } from "../utils/Regex"
+import SuccessMessage from "./SuccessMessage"
 
 function ContributeForm({ address }) {
     const [loading, setLoading] = useState(false)
@@ -85,19 +86,7 @@ function ContributeForm({ address }) {
                     </LoadingButton>
                 </Grid>
             </Grid>
-            <Snackbar
-                anchorOrigin={{
-                    vertical: vertical,
-                    horizontal: horizontal,
-                }}
-                open={open}
-                autoHideDuration={3000}
-                key={vertical + horizontal}
-            >
-                <Alert onClose={() => setOpen(false)} severity="success">
-                    You have successfully contributed to this campaign!
-                </Alert>
-            </Snackbar>
+            <SuccessMessage isOpen={open} message="You have successfully contributed to this campaign!" />
             <br />
             {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
         </form>

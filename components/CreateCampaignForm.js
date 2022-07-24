@@ -1,11 +1,12 @@
 import React, { useState } from "react"
-import { Grid, TextField, Snackbar, Alert } from "@mui/material"
+import { Grid, TextField } from "@mui/material"
 import Router from "next/router"
 import { LoadingButton } from "@mui/lab"
 import { factoryAddresses, factoryAbi } from "../components/Factory"
 import { useWeb3Contract, useMoralis } from "react-moralis"
 import { ethers } from "ethers"
 import { regexEtherVal } from "../utils/Regex"
+import SuccessMessage from "./SuccessMessage"
 
 const defaultValues = {
     minimumContribution: "",
@@ -37,7 +38,9 @@ function CreateCampaignForm() {
             })
         } else {
             setLoading(false)
-            setErrorMessage(`${formValues.minimumContribution ? "" : "minimumContribution is required"}`);
+            setErrorMessage(
+                `${formValues.minimumContribution ? "" : "minimumContribution is required"}`
+            )
         }
     }
 
@@ -52,12 +55,12 @@ function CreateCampaignForm() {
     })
 
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target
         if (value.match(regexEtherVal)) {
             setFormValues({
-            ...formValues,
-            [name]: value,
-        })
+                ...formValues,
+                [name]: value,
+            })
         } else {
             console.log("invalid")
         }
@@ -122,19 +125,7 @@ function CreateCampaignForm() {
                     </LoadingButton>
                 </Grid>
             </Grid>
-            <Snackbar
-                anchorOrigin={{
-                    vertical: vertical,
-                    horizontal: horizontal,
-                }}
-                open={open}
-                autoHideDuration={3000}
-                key={vertical + horizontal}
-            >
-                <Alert onClose={() => setOpen(false)} severity="success">
-                    Campaign was successfully created!
-                </Alert>
-            </Snackbar>
+            <SuccessMessage isOpen={open} message="Campaign was successfully created!" />
             <br />
             {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
         </form>

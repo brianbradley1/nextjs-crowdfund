@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from "react"
-import {
-    Button,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Alert,
-    Snackbar,
-} from "@mui/material"
+import { Button, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material"
 import Layout from "../../components/Layout"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { campaignAbi } from "../../components/Factory"
 import { useWeb3Contract, useMoralis } from "react-moralis"
 import RequestRow from "../../components/RequestRow"
+import SuccessMessage from "../../components/SuccessMessage"
 
 RequestIndex.getInitialProps = async ({ query }) => {
     const { address } = query
@@ -109,9 +101,14 @@ function RequestIndex({ address }) {
     }
 
     const renderRows = () => {
-
         return requests.map((request, index) => {
-            const { 0: description, 1: value, 2: recipient, 3: complete, 4: approvalCount } = request;
+            const {
+                0: description,
+                1: value,
+                2: recipient,
+                3: complete,
+                4: approvalCount,
+            } = request
 
             console.log(request)
             return (
@@ -168,32 +165,8 @@ function RequestIndex({ address }) {
                 <TableBody>{renderRows()}</TableBody>
             </Table>
             <div>Found {requestsCount} requests.</div>{" "}
-            <Snackbar
-                anchorOrigin={{
-                    vertical: vertical,
-                    horizontal: horizontal,
-                }}
-                open={openApprove}
-                autoHideDuration={3000}
-                key={vertical + horizontal + "1"}
-            >
-                <Alert onClose={() => setOpenApprove(false)} severity="success">
-                    Request was successfully approved!
-                </Alert>
-            </Snackbar>
-            <Snackbar
-                anchorOrigin={{
-                    vertical: vertical,
-                    horizontal: horizontal,
-                }}
-                open={openFinalise}
-                autoHideDuration={3000}
-                key={vertical + horizontal + "2"}
-            >
-                <Alert onClose={() => setOpenFinalise(false)} severity="success">
-                    Request was successfully finalised!
-                </Alert>
-            </Snackbar>
+            <SuccessMessage isOpen={openApprove} message="Request was successfully approved!" />
+            <SuccessMessage isOpen={openFinalise} message="Request was successfully finalised!" />
             <br />
             {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
         </Layout>

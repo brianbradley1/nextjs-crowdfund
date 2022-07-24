@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Grid, Alert, TextField, Snackbar, Button } from "@mui/material"
+import { Grid, Alert, TextField, Button } from "@mui/material"
 import { LoadingButton } from "@mui/lab"
 import { useRouter } from "next/router"
 import Layout from "../../components/Layout"
@@ -7,6 +7,7 @@ import { useMoralis, useWeb3Contract } from "react-moralis"
 import { campaignAbi } from "../../components/Factory"
 import { ethers } from "ethers"
 import { regexEtherVal } from "../../utils/Regex"
+import SuccessMessage from "../../components/SuccessMessage"
 
 RequestNew.getInitialProps = async ({ query }) => {
     const { address } = query
@@ -44,8 +45,9 @@ function RequestNew({ address }) {
             setLoading(false)
             setErrorMessage(
                 ` ${formValues.requestValue ? "" : "requestValue is required, "} 
-                  ${formValues.description ? "" : "description is required, "
-                } ${formValues.receipient ? "" : "receipient is required"}`
+                  ${formValues.description ? "" : "description is required, "} ${
+                    formValues.receipient ? "" : "receipient is required"
+                }`
             )
         }
     }
@@ -157,19 +159,7 @@ function RequestNew({ address }) {
                         </LoadingButton>
                     </Grid>
                 </Grid>
-                <Snackbar
-                    anchorOrigin={{
-                        vertical: vertical,
-                        horizontal: horizontal,
-                    }}
-                    open={open}
-                    autoHideDuration={3000}
-                    key={vertical + horizontal}
-                >
-                    <Alert onClose={() => setOpen(false)} severity="success">
-                        Request was successfully created!
-                    </Alert>
-                </Snackbar>
+                <SuccessMessage isOpen={open} message="Request was successfully created!" />
                 <br />
                 {errorMessage !== "" && <Alert severity="error">{errorMessage}</Alert>}
             </form>
