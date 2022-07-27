@@ -38,7 +38,7 @@ function RequestRow(props) {
         contractAddress: address,
         functionName: "approveRequest",
         params: {
-            index: id,
+            _id: id,
         },
     })
 
@@ -47,7 +47,7 @@ function RequestRow(props) {
         contractAddress: address,
         functionName: "finalizeRequest",
         params: {
-            index: id,
+            _id: id,
         },
     })
 
@@ -76,8 +76,10 @@ function RequestRow(props) {
         setLoadingFinalize(false)
         if (error.data) {
             props.updateErrorMessage(error.data.message)
-        } else {
+        } else if (error.message) {
             props.updateErrorMessage(error.message)
+        } else if (error) {
+            props.updateErrorMessage(error)
         }
     }
 

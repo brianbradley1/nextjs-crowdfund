@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Button, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material"
+import { Button, Table, TableBody, TableCell, TableHead, TableRow, Alert } from "@mui/material"
 import Layout from "../../components/Layout"
 import Link from "next/link"
 import { useRouter } from "next/router"
@@ -20,8 +20,6 @@ function RequestIndex({ address }) {
 
     const [openApprove, setOpenApprove] = useState(false)
     const [openFinalise, setOpenFinalise] = useState(false)
-    const [vertical, setVertical] = useState("top")
-    const [horizontal, setHorizontal] = useState("center")
 
     const [requestsCount, setRequestsCount] = useState(0)
     const [approversCount, setApproversCount] = useState(0)
@@ -29,12 +27,11 @@ function RequestIndex({ address }) {
     const options = { abi: campaignAbi.abi, contractAddress: address }
 
     async function getRequest(index) {
-        // TODO - Refactor options
         const requestFromCall = await Moralis.executeFunction({
             functionName: "getRequest",
             ...options,
             params: {
-                index: index,
+                _id: index,
             },
         })
         return requestFromCall
@@ -44,14 +41,13 @@ function RequestIndex({ address }) {
         let requestArr = []
         let requestNew = []
         if (requestsCount > 0) {
-            for (let i = 0; i < requestsCount; i++) {
+            for (let i = 1; i <= requestsCount; i++) {
                 requestArr = []
                 const request = await getRequest(i)
                 for (let j = 0; j < request.length; j++) {
                     const element = request[j]
                     requestArr.push(element)
                 }
-                // convert array items to obj format
                 var requestObj = requestArr.reduce(function (acc, cur, i) {
                     acc[i] = cur
                     return acc
@@ -59,6 +55,7 @@ function RequestIndex({ address }) {
                 requestNew.push(requestObj)
             }
             setRequests(requestNew)
+            console.log("request = " + requestNew)
         }
     }
 
@@ -108,13 +105,14 @@ function RequestIndex({ address }) {
                 2: recipient,
                 3: complete,
                 4: approvalCount,
+                5: id,
             } = request
 
             console.log(request)
             return (
                 <RequestRow
                     key={index}
-                    id={index}
+                    id={Number(id)}
                     description={description}
                     value={value}
                     recipient={recipient}

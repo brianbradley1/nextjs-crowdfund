@@ -26,8 +26,6 @@ function RequestNew({ address }) {
     const [loading, setLoading] = useState(false)
     const [formValues, setFormValues] = useState(defaultValues)
     const [open, setOpen] = useState(false)
-    const [vertical, setVertical] = useState("top")
-    const [horizontal, setHorizontal] = useState("center")
 
     const router = useRouter()
 

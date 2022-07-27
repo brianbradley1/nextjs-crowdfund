@@ -17,8 +17,6 @@ function CreateCampaignForm() {
     const [loading, setLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
     const [open, setOpen] = useState(false)
-    const [vertical, setVertical] = useState("top")
-    const [horizontal, setHorizontal] = useState("center")
     const [formValues, setFormValues] = useState(defaultValues)
 
     const { Moralis, isWeb3Enabled, chainId: chainIdHex } = useMoralis()

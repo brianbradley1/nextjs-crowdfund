@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Grid, TextField } from "@mui/material"
+import { Grid, TextField, Alert } from "@mui/material"
 import { LoadingButton } from "@mui/lab"
 import { useWeb3Contract, useMoralis } from "react-moralis"
 import { campaignAbi } from "./Factory"
@@ -13,8 +13,6 @@ function ContributeForm({ address }) {
     const [errorMessage, setErrorMessage] = useState("")
     const [contribution, setContributionValue] = useState("")
     const [open, setOpen] = useState(false)
-    const [vertical, setVertical] = useState("top")
-    const [horizontal, setHorizontal] = useState("center")
 
     const router = useRouter()
 
@@ -59,8 +57,10 @@ function ContributeForm({ address }) {
     const handleError = async (error) => {
         if (error.data) {
             setErrorMessage(error.data.message)
-        } else {
+        } else if (error.message) {
             setErrorMessage(error.message)
+        } else if (error) {
+            setErrorMessage(error)
         }
         setLoading(false)
     }
