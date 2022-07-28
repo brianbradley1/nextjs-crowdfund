@@ -55,7 +55,6 @@ function RequestIndex({ address }) {
                 requestNew.push(requestObj)
             }
             setRequests(requestNew)
-            console.log("request = " + requestNew)
         }
     }
 

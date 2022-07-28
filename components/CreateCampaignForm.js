@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Grid, TextField } from "@mui/material"
+import { Grid, TextField, Alert } from "@mui/material"
 import Router from "next/router"
 import { LoadingButton } from "@mui/lab"
 import { factoryAddresses, factoryAbi } from "../components/Factory"
@@ -10,7 +10,8 @@ import SuccessMessage from "./SuccessMessage"
 
 const defaultValues = {
     minimumContribution: "",
-    // description: "",
+    title: "",
+    description: "",
 }
 
 function CreateCampaignForm() {
@@ -29,7 +30,7 @@ function CreateCampaignForm() {
         setErrorMessage("")
         setLoading(true)
 
-        if (formValues.minimumContribution) {
+        if (formValues.minimumContribution && formValues.description && formValues.title) {
             await createCampaign({
                 onSuccess: handleSuccess,
                 onError: handleError,
@@ -37,7 +38,9 @@ function CreateCampaignForm() {
         } else {
             setLoading(false)
             setErrorMessage(
-                `${formValues.minimumContribution ? "" : "minimumContribution is required"}`
+                `${formValues.minimumContribution ? "" : "minimumContribution is required"}
+                ${formValues.title ? "" : "title is required"}
+                ${formValues.description ? "" : "description is required"}`
             )
         }
     }
@@ -47,20 +50,29 @@ function CreateCampaignForm() {
         contractAddress: factoryAddress,
         functionName: "createCampaign",
         params: {
-            minimum: ethers.utils.parseEther(formValues.minimumContribution || "0"),
-            description: formValues.description,
+            _minimum: ethers.utils.parseEther(formValues.minimumContribution || "0"),
+            _title: formValues.title,
+            _description: formValues.description,
         },
     })
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
-        if (value.match(regexEtherVal)) {
+        console.log("name = " + name)
+        if (name === "minimumContribution") {
+            if (value.match(regexEtherVal)) {
+                setFormValues({
+                    ...formValues,
+                    [name]: value,
+                })
+            } else {
+                console.log("invalid")
+            }
+        } else if (name === "description" || name === "title") {
             setFormValues({
                 ...formValues,
                 [name]: value,
             })
-        } else {
-            console.log("invalid")
         }
     }
 
@@ -75,11 +87,12 @@ function CreateCampaignForm() {
     }
 
     const handleError = async (error) => {
-        console.log("error = " + error)
         if (error.data) {
             setErrorMessage(error.data.message)
-        } else if (error) {
+        } else if (error.message) {
             setErrorMessage(error.message)
+        } else if (error) {
+            setErrorMessage(error)
         }
         setLoading(false)
     }
@@ -100,7 +113,18 @@ function CreateCampaignForm() {
                     />
                 </Grid>
 
-                {/* <Grid item>
+                <Grid item>
+                    <TextField
+                        id="title-input"
+                        name="title"
+                        label="title"
+                        type="text"
+                        value={formValues.title}
+                        onChange={handleInputChange}
+                    />
+                </Grid>
+
+                <Grid item>
                     <TextField
                         id="description-input"
                         name="description"
@@ -109,7 +133,7 @@ function CreateCampaignForm() {
                         value={formValues.description}
                         onChange={handleInputChange}
                     />
-                </Grid> */}
+                </Grid>
 
                 <Grid item>
                     <LoadingButton
